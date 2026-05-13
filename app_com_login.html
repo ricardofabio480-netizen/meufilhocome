@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meu Filho Come! — App</title>
+<!-- SUPABASE CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--red:#e63946;--red2:#c0392b;--blue:#457b9d;--green:#27ae60;--warn:#f39c12;--bg:#f8f9fa;--white:#fff;--text:#2d3436;--light:#636e72;--border:#dee2e6;--sw:250px;--hh:58px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text)}
+
+/* AUTH */
+.auth-overlay{position:fixed;inset:0;background:linear-gradient(135deg,#1a1a2e,#0f3460);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px}
+.auth-box{background:var(--white);border-radius:20px;padding:40px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.auth-logo{text-align:center;margin-bottom:28px}
+.auth-logo h1{font-size:26px;font-weight:800;color:var(--red)}
+.auth-logo p{font-size:13px;color:var(--light);margin-top:4px}
+.auth-tabs{display:flex;background:var(--bg);border-radius:10px;padding:4px;margin-bottom:24px}
+.auth-tab{flex:1;padding:9px;text-align:center;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--light);transition:all .2s}
+.auth-tab.active{background:var(--white);color:var(--red);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.auth-form{display:none}
+.auth-form.active{display:block}
+.form-group{margin-bottom:14px}
+.form-label{font-size:12px;font-weight:600;color:var(--text);margin-bottom:5px;display:block}
+.form-input{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;transition:border .2s}
+.form-input:focus{outline:none;border-color:var(--red)}
+.btn{padding:12px 20px;border-radius:10px;border:none;cursor:pointer;font-size:14px;font-weight:700;transition:all .2s;width:100%}
+.btn-red{background:var(--red);color:#fff}
+.btn-red:hover{background:var(--red2)}
+.auth-divider{text-align:center;font-size:12px;color:var(--light);margin:12px 0}
+.auth-error{background:#fff0f0;color:var(--red);border:1px solid #ffcccc;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none}
+
+/* CONFIG SCREEN */
+.config-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:999;padding:20px}
+.config-box{background:white;border-radius:20px;padding:36px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto}
+.config-box h2{font-size:22px;font-weight:800;color:var(--red);margin-bottom:8px}
+.config-box p{font-size:13px;color:var(--light);margin-bottom:20px;line-height:1.6}
+.config-step{background:var(--bg);border-radius:10px;padding:14px;margin-bottom:12px;font-size:13px;line-height:1.6}
+.config-step strong{color:var(--text);display:block;margin-bottom:4px}
+.config-step code{background:#e9ecef;padding:2px 6px;border-radius:4px;font-family:monospace;font-size:12px}
+
+/* MAIN APP */
+.app{display:none;min-height:100vh}
+.sidebar{width:var(--sw);background:var(--white);border-right:1px solid var(--border);position:fixed;top:0;left:0;height:100vh;overflow-y:auto;z-index:100;display:flex;flex-direction:column}
+.sidebar-logo{padding:18px;border-bottom:1px solid var(--border)}
+.sidebar-logo h1{font-size:17px;font-weight:800;color:var(--red)}
+.sidebar-logo p{font-size:11px;color:var(--light);margin-top:1px}
+.nav-section{padding:12px 8px 4px}
+.nav-section-title{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--light);padding:0 8px;margin-bottom:4px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--text);transition:all .2s;margin-bottom:2px}
+.nav-item:hover{background:#f0f0f0}
+.nav-item.active{background:#fff0f0;color:var(--red);font-weight:600}
+.nav-item .ico{font-size:15px;width:18px;text-align:center}
+.user-bar{margin-top:auto;padding:14px;border-top:1px solid var(--border)}
+.user-info{display:flex;align-items:center;gap:10px}
+.user-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--red),#ff6b6b);display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;flex-shrink:0}
+.user-email{font-size:11px;color:var(--light);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px}
+.user-name{font-size:13px;font-weight:600}
+.logout-btn{margin-top:10px;width:100%;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:12px;color:var(--light);transition:all .2s}
+.logout-btn:hover{background:#fff0f0;color:var(--red);border-color:#ffcccc}
+.main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column}
+.header{background:var(--white);border-bottom:1px solid var(--border);padding:0 22px;height:var(--hh);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.header-title{font-size:16px;font-weight:700}
+.header-subtitle{font-size:11px;color:var(--light)}
+.hbtn{padding:7px 14px;border-radius:8px;border:none;cursor:pointer;font-size:12px;font-weight:600;background:var(--red);color:#fff;transition:all .2s}
+.hbtn:hover{background:var(--red2)}
+.page{display:none;padding:20px}
+.page.active{display:block}
+.card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:16px;margin-bottom:12px}
+.card-title{font-size:14px;font-weight:700;margin-bottom:13px;display:flex;align-items:center;gap:6px;color:var(--text)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
+.stat-card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:16px;text-align:center}
+.stat-card .num{font-size:28px;font-weight:800;color:var(--red)}
+.stat-card .lbl{font-size:11px;color:var(--light);margin-top:2px}
+.stat-card .sico{font-size:24px;margin-bottom:5px}
+.fl{font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px;display:block}
+.fi,.fs,.ft{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--white);color:var(--text);font-family:inherit}
+.fi:focus,.fs:focus,.ft:focus{outline:none;border-color:var(--red)}
+.ft{resize:vertical;min-height:70px}
+.fg{margin-bottom:13px}
+.tc{border:1px solid var(--border);border-radius:8px;padding:6px;min-height:40px;display:flex;flex-wrap:wrap;gap:5px;background:#fff}
+.tag{padding:3px 9px;border-radius:20px;font-size:11px;display:flex;align-items:center;gap:4px;border:1px solid}
+.tag-r{background:#fff0f0;color:var(--red);border-color:#ffcccc}
+.tag-g{background:#f0fff4;color:var(--green);border-color:#c3e6cb}
+.tag-y{background:#fffbf0;color:var(--warn);border-color:#ffeeba}
+.tag-x{cursor:pointer;font-size:13px;opacity:.6}
+.tag-x:hover{opacity:1}
+.ti{border:none;outline:none;font-size:12px;min-width:100px;flex:1;font-family:inherit}
+.pb{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.pb-R{background:#fff0f0;color:#c0392b}
+.pb-T{background:#fff8e1;color:#f57f17}
+.pb-C{background:#e8f5e9;color:#2e7d32}
+.pb-P{background:#e3f2fd;color:#1565c0}
+.pb-A{background:#f3e5f5;color:#6a1b9a}
+.al{padding:10px 13px;border-radius:8px;margin-bottom:8px;font-size:12px;display:flex;align-items:flex-start;gap:8px;line-height:1.5}
+.al-i{background:#e3f2fd;color:#1565c0}
+.al-w{background:#fff8e1;color:#f57f17}
+.al-d{background:#fff0f0;color:#c62828}
+.al-s{background:#e8f5e9;color:#2e7d32}
+.rt{position:relative;padding-left:24px}
+.ri{position:relative;padding-bottom:16px}
+.ri::before{content:'';position:absolute;left:-17px;top:4px;width:8px;height:8px;border-radius:50%;background:var(--red)}
+.ri::after{content:'';position:absolute;left:-14px;top:12px;width:2px;height:calc(100% - 8px);background:var(--border)}
+.ri:last-child::after{display:none}
+.ri .rtime{font-size:11px;color:var(--light);font-weight:600}
+.ri .rmeal{font-size:13px;font-weight:600;margin-top:1px}
+.ri .rdet{font-size:12px;color:var(--light)}
+.de{background:#fff;border:1px solid var(--border);border-radius:10px;padding:13px;margin-bottom:9px}
+.de .eh{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.de .emeal{font-size:13px;font-weight:700;color:var(--red)}
+.de .edate{font-size:11px;color:var(--light)}
+.rsel{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.rbtn{padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);cursor:pointer;font-size:11px;font-weight:600;background:#fff;transition:all .2s}
+.rbtn.sR{background:#fff0f0;border-color:#e74c3c;color:#e74c3c}
+.rbtn.sT{background:#fff8e1;border-color:#f39c12;color:#f39c12}
+.rbtn.sC{background:#e8f5e9;border-color:#27ae60;color:#27ae60}
+.rbtn.sP{background:#e3f2fd;border-color:#3498db;color:#3498db}
+.rbtn.sA{background:#f3e5f5;border-color:#9b59b6;color:#9b59b6}
+.btn2{padding:9px 18px;border-radius:8px;border:none;cursor:pointer;font-size:12px;font-weight:600;transition:all .2s}
+.bp{background:var(--red);color:#fff}
+.bp:hover{background:var(--red2)}
+.bs{background:var(--bg);color:var(--text);border:1px solid var(--border)}
+.bs:hover{background:#e9ecef}
+.progress-table{width:100%;border-collapse:collapse}
+.progress-table th{text-align:left;padding:8px 10px;font-size:11px;color:var(--light);border-bottom:2px solid var(--border);text-transform:uppercase;letter-spacing:.5px}
+.progress-table td{padding:8px 10px;border-bottom:1px solid var(--border);font-size:13px}
+.progress-table tr:hover td{background:#fafafa}
+.empty-state{text-align:center;padding:44px 16px;color:var(--light)}
+.empty-state .ei{font-size:36px;margin-bottom:8px}
+.empty-state h3{font-size:15px;color:var(--text);margin-bottom:5px}
+.empty-state p{font-size:12px}
+.sec-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.sec-h h2{font-size:17px;font-weight:800}
+.sec-h p{font-size:11px;color:var(--light);margin-top:1px}
+.ph{display:flex;align-items:center;gap:16px;padding:16px;background:linear-gradient(135deg,var(--red),#ff6b6b);border-radius:12px;color:#fff;margin-bottom:16px}
+.pa{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
+.pi h2{font-size:20px;font-weight:800}
+.pi p{font-size:12px;opacity:.85;margin-top:2px}
+.pi-badges{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.pi-badge{background:rgba(255,255,255,.25);padding:2px 10px;border-radius:20px;font-size:11px}
+.ig{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:9px}
+.ii{background:var(--bg);border-radius:8px;padding:9px}
+.ii .il{font-size:10px;color:var(--light);text-transform:uppercase;letter-spacing:.5px}
+.ii .iv{font-size:13px;font-weight:600;margin-top:2px}
+.week-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}
+.dc{background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.dh{background:var(--red);color:#fff;padding:6px 10px;font-size:12px;font-weight:700;text-align:center}
+.ms{padding:6px 10px;border-bottom:1px solid var(--border)}
+.ms:last-child{border-bottom:none}
+.ms .mt{font-size:9px;color:var(--light);text-transform:uppercase;letter-spacing:.5px;margin-bottom:1px}
+.ms .mf{font-size:11px;color:var(--text)}
+.ci-item{display:flex;gap:9px;padding:10px;border-radius:8px;margin-bottom:6px;align-items:flex-start}
+.ci-bad{background:#fff0f0;border-left:3px solid var(--red)}
+.ci-good{background:#f0fff4;border-left:3px solid var(--green)}
+.ci-ico{font-size:15px;flex-shrink:0;margin-top:1px}
+.ci-ph{font-size:12px;font-weight:600}
+.ci-rep{font-size:11px;color:var(--light);margin-top:2px}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--text);color:#fff;padding:10px 16px;border-radius:10px;font-size:12px;z-index:9999;transform:translateY(100px);opacity:0;transition:all .3s}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{background:var(--green)}
+.loading{position:fixed;inset:0;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;z-index:500;font-size:16px;color:var(--light)}
+@media(max-width:768px){
+.g2,.g3,.g4,.week-grid{grid-template-columns:1fr}
+.sidebar{transform:translateX(-100%)}
+.main{margin-left:0}
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading" id="loading">⏳ Carregando...</div>
+
+<!-- CONFIG SUPABASE SCREEN -->
+<div class="config-overlay" id="configScreen" style="display:none">
+  <div class="config-box">
+    <h2>⚙️ Configurar Supabase</h2>
+    <p>Para a plataforma funcionar com login e dados na nuvem, você precisa criar uma conta gratuita no Supabase e inserir as credenciais abaixo.</p>
+
+    <div class="config-step">
+      <strong>Passo 1 — Criar conta gratuita</strong>
+      Acesse <code>supabase.com</code> e crie uma conta. Clique em "New Project".
+    </div>
+    <div class="config-step">
+      <strong>Passo 2 — Copiar as credenciais</strong>
+      No painel do projeto: <code>Settings → API</code><br>
+      Copie o <strong>Project URL</strong> e o <strong>anon public key</strong>.
+    </div>
+    <div class="config-step">
+      <strong>Passo 3 — Criar as tabelas</strong>
+      Vá em <code>SQL Editor</code> e execute o SQL do arquivo <code>supabase_setup.sql</code> incluso na pasta.
+    </div>
+
+    <div class="fg"><label class="fl">Project URL do Supabase *</label><input type="text" class="fi" id="cfg-url" placeholder="https://xxxxxxxxxxx.supabase.co"></div>
+    <div class="fg"><label class="fl">Anon Key (chave pública) *</label><input type="text" class="fi" id="cfg-key" placeholder="eyJhbGci..."></div>
+
+    <button onclick="saveConfig()" class="btn btn-red" style="width:100%;padding:12px;font-size:14px;border-radius:10px">✅ Salvar e Conectar</button>
+    <p style="text-align:center;margin-top:12px;font-size:11px;color:var(--light)">Essas credenciais ficam salvas localmente no seu navegador.</p>
+  </div>
+</div>
+
+<!-- AUTH SCREEN -->
+<div class="auth-overlay" id="authScreen" style="display:none">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <h1>Meu Filho Come!</h1>
+      <p>Plataforma de Alimentação Infantil</p>
+    </div>
+    <div id="auth-error" class="auth-error"></div>
+    <div class="auth-tabs">
+      <div class="auth-tab active" onclick="switchTab('login')">Entrar</div>
+      <div class="auth-tab" onclick="switchTab('register')">Criar Conta</div>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="tab-login" class="auth-form active">
+      <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="login-email" placeholder="seu@email.com"></div>
+      <div class="form-group"><label class="form-label">Senha</label><input type="password" class="form-input" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <button class="btn btn-red" onclick="doLogin()">Entrar →</button>
+      <div class="auth-divider">ou</div>
+      <button class="btn" style="background:var(--bg);color:var(--text);border:1px solid var(--border)" onclick="switchTab('register')">Criar nova conta</button>
+    </div>
+
+    <!-- REGISTER -->
+    <div id="tab-register" class="auth-form">
+      <div class="form-group"><label class="form-label">Seu nome</label><input type="text" class="form-input" id="reg-name" placeholder="Maria Silva"></div>
+      <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="reg-email" placeholder="seu@email.com"></div>
+      <div class="form-group"><label class="form-label">Senha (mín. 6 caracteres)</label><input type="password" class="form-input" id="reg-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doRegister()"></div>
+      <button class="btn btn-red" onclick="doRegister()">Criar Conta →</button>
+      <div class="auth-divider">ou</div>
+      <button class="btn" style="background:var(--bg);color:var(--text);border:1px solid var(--border)" onclick="switchTab('login')">Já tenho conta</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="app" id="appMain" style="display:flex">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <h1>Meu Filho Come!</h1>
+      <p>Plataforma de Alimentação Infantil</p>
+    </div>
+    <nav>
+      <div class="nav-section">
+        <div class="nav-section-title">Principal</div>
+        <div class="nav-item active" onclick="go('dashboard')"><span class="ico">🏠</span> Dashboard</div>
+        <div class="nav-item" onclick="go('perfil')"><span class="ico">👶</span> Perfil da Criança</div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Alimentação</div>
+        <div class="nav-item" onclick="go('diario')"><span class="ico">📖</span> Diário Alimentar</div>
+        <div class="nav-item" onclick="go('cardapio')"><span class="ico">🍽️</span> Cardápio Semanal</div>
+        <div class="nav-item" onclick="go('progressao')"><span class="ico">📊</span> Progressão</div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Conteúdo</div>
+        <div class="nav-item" onclick="go('tecnicas')"><span class="ico">💡</span> Técnicas</div>
+        <div class="nav-item" onclick="go('frases')"><span class="ico">💬</span> Guia de Frases</div>
+        <div class="nav-item" onclick="go('receitas')"><span class="ico">🥗</span> Receitas</div>
+        <div class="nav-item" onclick="go('alertas')"><span class="ico">⚠️</span> Sinais de Alerta</div>
+      </div>
+    </nav>
+    <div class="user-bar">
+      <div class="user-info">
+        <div class="user-avatar">👩</div>
+        <div>
+          <div class="user-name" id="user-name-display">Usuária</div>
+          <div class="user-email" id="user-email-display">—</div>
+        </div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">🚪 Sair da conta</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="header">
+      <div><div class="header-title" id="hTitle">Dashboard</div><div class="header-subtitle" id="hSub">Bem-vinda!</div></div>
+      <button class="hbtn" onclick="go('diario')">+ Registrar Refeição</button>
+    </header>
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="g4" style="margin-bottom:12px">
+        <div class="stat-card"><div class="sico">🍎</div><div class="num" id="st-ac">0</div><div class="lbl">Alimentos Aceitos</div></div>
+        <div class="stat-card"><div class="sico">🚫</div><div class="num" id="st-rec">0</div><div class="lbl">Alimentos Recusados</div></div>
+        <div class="stat-card"><div class="sico">📖</div><div class="num" id="st-dia">0</div><div class="lbl">Registros</div></div>
+        <div class="stat-card"><div class="sico">⭐</div><div class="num" id="st-prog">0</div><div class="lbl">Na Progressão</div></div>
+      </div>
+      <div class="g2">
+        <div class="card"><div class="card-title">👶 Perfil Rápido</div><div id="db-perfil"><div class="empty-state" style="padding:20px"><div class="ei">👶</div><h3>Perfil não cadastrado</h3><p>Crie o perfil do seu filho</p><button class="btn2 bp" style="margin-top:8px" onclick="go('perfil')">Criar Perfil</button></div></div></div>
+        <div class="card"><div class="card-title">⏰ Rotina de Hoje</div><div id="db-rotina"><div class="empty-state" style="padding:20px"><div class="ei">⏰</div><h3>Rotina não configurada</h3></div></div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">💡 Método dos 3 Ps</div>
+        <div class="g3">
+          <div style="padding:12px;background:#fff0f0;border-radius:10px;text-align:center"><div style="font-size:22px;margin-bottom:5px">🤝</div><div style="font-weight:700;color:var(--red);margin-bottom:4px;font-size:13px">Paciência</div><div style="font-size:12px;color:#666">A mudança é lenta. Cada exposição constrói familiaridade.</div></div>
+          <div style="padding:12px;background:#f0fff4;border-radius:10px;text-align:center"><div style="font-size:22px;margin-bottom:5px">👨‍👩‍👧</div><div style="font-weight:700;color:var(--green);margin-bottom:4px;font-size:13px">Presença</div><div style="font-size:12px;color:#666">Refeições em família, sem telas. Aprende por imitação.</div></div>
+          <div style="padding:12px;background:#e3f2fd;border-radius:10px;text-align:center"><div style="font-size:22px;margin-bottom:5px">📈</div><div style="font-weight:700;color:#1565c0;margin-bottom:4px;font-size:13px">Progressão</div><div style="font-size:12px;color:#666">Do familiar para o novo. Respeite o ritmo do seu filho.</div></div>
+        </div>
+      </div>
+      <div class="card"><div class="card-title">📖 Últimos Registros</div><div id="db-diary"><p style="font-size:12px;color:var(--light)">Nenhum registro ainda. <a href="#" onclick="go('diario')" style="color:var(--red)">Registre a primeira refeição →</a></p></div></div>
+    </div>
+
+    <!-- PERFIL -->
+    <div class="page" id="page-perfil">
+      <div class="sec-h"><div><h2>Perfil da Criança</h2><p>Cadastre as informações completas</p></div><button class="btn2 bp" onclick="savePerfil()">💾 Salvar</button></div>
+      <div id="perfil-display" style="display:none">
+        <div class="ph"><div class="pa">👶</div><div class="pi"><h2 id="dn"></h2><p id="di"></p><div class="pi-badges"><span class="pi-badge" id="df"></span><span class="pi-badge" id="dp"></span></div></div><button class="btn2 bs" style="margin-left:auto" onclick="editPerfil()">✏️ Editar</button></div>
+        <div class="g2">
+          <div class="card"><div class="card-title">✅ Alimentos Aceitos</div><div id="dac" style="display:flex;flex-wrap:wrap;gap:5px"></div></div>
+          <div class="card"><div class="card-title">🚫 Alimentos Recusados</div><div id="drec" style="display:flex;flex-wrap:wrap;gap:5px"></div></div>
+        </div>
+        <div class="g2">
+          <div class="card"><div class="card-title">⚠️ Alergias</div><div id="dal" style="display:flex;flex-wrap:wrap;gap:5px"></div></div>
+          <div class="card"><div class="card-title">🍞 Texturas Rejeitadas</div><div id="dtex" style="display:flex;flex-wrap:wrap;gap:5px"></div></div>
+        </div>
+        <div class="card"><div class="card-title">⏰ Rotina Alimentar</div><div id="drot" class="rt"></div></div>
+        <div class="card"><div class="card-title">📝 Observações</div><div id="dobs" style="font-size:13px;line-height:1.6"></div></div>
+      </div>
+      <div id="perfil-form">
+        <div class="card">
+          <div class="card-title">👶 Informações Básicas</div>
+          <div class="g2">
+            <div class="fg"><label class="fl">Nome *</label><input type="text" class="fi" id="p-nome" placeholder="Ex: Miguel"></div>
+            <div class="fg"><label class="fl">Idade *</label><input type="text" class="fi" id="p-idade" placeholder="Ex: 14 meses"></div>
+            <div class="fg"><label class="fl">Peso (kg)</label><input type="text" class="fi" id="p-peso" placeholder="Ex: 10,5"></div>
+            <div class="fg"><label class="fl">Fase</label>
+              <select class="fs" id="p-fase">
+                <option value="">Selecione...</option>
+                <option value="6-8 meses — Janela de Ouro">6 a 8 meses — Janela de Ouro</option>
+                <option value="8-12 meses — Descoberta das Texturas">8 a 12 meses — Descoberta das Texturas</option>
+                <option value="12-18 meses — Autonomia">12 a 18 meses — Autonomia</option>
+                <option value="18m-2 anos — Pico da Neofobia">18 meses a 2 anos — Pico da Neofobia</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="card"><div class="card-title">⚠️ Alergias</div><label class="fl">Digite e pressione Enter</label><div class="tc" id="tc-alergias"><input type="text" class="ti" placeholder="Ex: Lactose..." onkeydown="addTag(event,'alergias')"></div></div>
+        <div class="g2">
+          <div class="card"><div class="card-title">✅ Alimentos Aceitos</div><label class="fl">Digite e pressione Enter</label><div class="tc" id="tc-aceitos"><input type="text" class="ti" placeholder="Ex: Banana..." onkeydown="addTag(event,'aceitos')"></div></div>
+          <div class="card"><div class="card-title">🚫 Alimentos Recusados</div><label class="fl">Digite e pressione Enter</label><div class="tc" id="tc-recusados"><input type="text" class="ti" placeholder="Ex: Brócolis..." onkeydown="addTag(event,'recusados')"></div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">🍞 Texturas Rejeitadas</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+            <label style="display:flex;align-items:center;gap:4px;cursor:pointer;padding:6px 10px;border:1px solid var(--border);border-radius:20px;font-size:12px"><input type="checkbox" value="Grumos no purê" onchange="updTex(this)"> Grumos no purê</label>
+            <label style="display:flex;align-items:center;gap:4px;cursor:pointer;padding:6px 10px;border:1px solid var(--border);border-radius:20px;font-size:12px"><input type="checkbox" value="Fibras longas" onchange="updTex(this)"> Fibras longas</label>
+            <label style="display:flex;align-items:center;gap:4px;cursor:pointer;padding:6px 10px;border:1px solid var(--border);border-radius:20px;font-size:12px"><input type="checkbox" value="Alimentos esfarelados" onchange="updTex(this)"> Esfarelados</label>
+            <label style="display:flex;align-items:center;gap:4px;cursor:pointer;padding:6px 10px;border:1px solid var(--border);border-radius:20px;font-size:12px"><input type="checkbox" value="Alimentos misturados" onchange="updTex(this)"> Misturados</label>
+            <label style="display:flex;align-items:center;gap:4px;cursor:pointer;padding:6px 10px;border:1px solid var(--border);border-radius:20px;font-size:12px"><input type="checkbox" value="Alimentos pegajosos" onchange="updTex(this)"> Pegajosos</label>
+          </div>
+          <input type="text" class="fi" id="tex-c" placeholder="Outra textura..." onkeydown="if(event.key==='Enter'){addTexC()}">
+          <div id="tc-texturas" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:7px"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">⏰ Rotina Alimentar</div>
+          <div class="al al-i">ℹ️ Estrutura recomendada: Café 7h · Lanche M 10h · Almoço 12h · Lanche T 15h · Jantar 18h. Entre refeições: só água.</div>
+          <div class="g2">
+            <div class="fg"><label class="fl">Café da manhã — Horário</label><input type="time" class="fi" id="r-cafe-h" value="07:00"></div>
+            <div class="fg"><label class="fl">O que costuma comer</label><input type="text" class="fi" id="r-cafe-a" placeholder="Ex: Mingau de aveia com banana"></div>
+            <div class="fg"><label class="fl">Lanche da manhã — Horário</label><input type="time" class="fi" id="r-l1-h" value="10:00"></div>
+            <div class="fg"><label class="fl">O que costuma comer</label><input type="text" class="fi" id="r-l1-a" placeholder="Ex: Fruta em pedaços"></div>
+            <div class="fg"><label class="fl">Almoço — Horário</label><input type="time" class="fi" id="r-alm-h" value="12:00"></div>
+            <div class="fg"><label class="fl">O que costuma comer</label><input type="text" class="fi" id="r-alm-a" placeholder="Ex: Arroz + frango + legumes"></div>
+            <div class="fg"><label class="fl">Lanche da tarde — Horário</label><input type="time" class="fi" id="r-l2-h" value="15:00"></div>
+            <div class="fg"><label class="fl">O que costuma comer</label><input type="text" class="fi" id="r-l2-a" placeholder="Ex: Iogurte com fruta"></div>
+            <div class="fg"><label class="fl">Jantar — Horário</label><input type="time" class="fi" id="r-jan-h" value="18:30"></div>
+            <div class="fg"><label class="fl">O que costuma comer</label><input type="text" class="fi" id="r-jan-a" placeholder="Ex: Sopa ou papa"></div>
+          </div>
+        </div>
+        <div class="card"><div class="card-title">📝 Observações</div><textarea class="ft" id="p-obs" placeholder="Tipo de recusa, comportamentos, histórico..." rows="3"></textarea></div>
+        <button class="btn2 bp" onclick="savePerfil()" style="width:100%;padding:12px;font-size:14px;border-radius:10px;margin-bottom:20px">💾 Salvar Perfil da Criança</button>
+      </div>
+    </div>
+
+    <!-- DIÁRIO -->
+    <div class="page" id="page-diario">
+      <div class="sec-h"><div><h2>Diário Alimentar</h2><p>Registre cada refeição</p></div><button class="btn2 bp" onclick="togDiary()">+ Nova Entrada</button></div>
+      <div id="diary-form-c" style="display:none">
+        <div class="card">
+          <div class="card-title">📝 Registrar Refeição</div>
+          <div class="g2">
+            <div class="fg"><label class="fl">Data</label><input type="date" class="fi" id="d-date"></div>
+            <div class="fg"><label class="fl">Refeição</label><select class="fs" id="d-meal"><option>Café da manhã</option><option>Lanche da manhã</option><option>Almoço</option><option>Lanche da tarde</option><option>Jantar</option></select></div>
+          </div>
+          <div class="fg"><label class="fl">Alimentos oferecidos</label><input type="text" class="fi" id="d-foods" placeholder="Ex: Arroz, frango, cenoura cozida"></div>
+          <div class="fg"><label class="fl">Reação</label>
+            <div class="rsel">
+              <button class="rbtn" onclick="selR(this,'R')">🚫 Recusou</button>
+              <button class="rbtn" onclick="selR(this,'T')">👋 Tocou</button>
+              <button class="rbtn" onclick="selR(this,'C')">👃 Cheirou</button>
+              <button class="rbtn" onclick="selR(this,'P')">👅 Provou</button>
+              <button class="rbtn" onclick="selR(this,'A')">✅ Aceitou</button>
+            </div>
+          </div>
+          <div class="fg"><label class="fl">Observações</label><textarea class="ft" id="d-obs" placeholder="Como foi a refeição?" rows="2"></textarea></div>
+          <div style="display:flex;gap:8px"><button class="btn2 bp" onclick="saveDiary()">💾 Salvar</button><button class="btn2 bs" onclick="togDiary()">Cancelar</button></div>
+        </div>
+      </div>
+      <div id="diary-entries"></div>
+    </div>
+
+    <!-- CARDÁPIO -->
+    <div class="page" id="page-cardapio">
+      <div class="sec-h"><div><h2>Cardápio Semanal</h2><p>Cardápio de alta aceitação — Bônus 1</p></div></div>
+      <div class="al al-i" style="margin-bottom:14px">ℹ️ Adapte as texturas para a fase do seu filho. <strong>Repita alimentos recusados nas semanas seguintes.</strong></div>
+      <div class="week-grid">
+        <div class="dc"><div class="dh">Segunda</div><div class="ms"><div class="mt">Café</div><div class="mf">Mingau de aveia com banana</div></div><div class="ms"><div class="mt">Lanche M</div><div class="mf">Mamão em pedaços</div></div><div class="ms"><div class="mt">Almoço</div><div class="mf">Arroz + frango desfiado + cenoura + azeite</div></div><div class="ms"><div class="mt">Lanche T</div><div class="mf">Iogurte com fruta amassada</div></div><div class="ms"><div class="mt">Jantar</div><div class="mf">Omelete de abobrinha + purê de batata</div></div></div>
+        <div class="dc"><div class="dh">Terça</div><div class="ms"><div class="mt">Café</div><div class="mf">Vitamina de mamão com aveia</div></div><div class="ms"><div class="mt">Lanche M</div><div class="mf">Banana com pasta de amendoim</div></div><div class="ms"><div class="mt">Almoço</div><div class="mf">Macarrão com molho + lentilha</div></div><div class="ms"><div class="mt">Lanche T</div><div class="mf">Maçã cozida com canela</div></div><div class="ms"><div class="mt">Jantar</div><div class="mf">Frango + batata-doce + brócolis macio</div></div></div>
+        <div class="dc"><div class="dh">Quarta</div><div class="ms"><div class="mt">Café</div><div class="mf">Panqueca de banana e ovo</div></div><div class="ms"><div class="mt">Lanche M</div><div class="mf">Cubinhos de queijo minas</div></div><div class="ms"><div class="mt">Almoço</div><div class="mf">Arroz + feijão amassado + abobrinha</div></div><div class="ms"><div class="mt">Lanche T</div><div class="mf">Vitamina verde (banana + espinafre)</div></div><div class="ms"><div class="mt">Jantar</div><div class="mf">Sopa de legumes com frango</div></div></div>
+        <div class="dc"><div class="dh">Quinta</div><div class="ms"><div class="mt">Café</div><div class="mf">Mingau de aveia com maçã</div></div><div class="ms"><div class="mt">Lanche M</div><div class="mf">Pera macia em pedaços</div></div><div class="ms"><div class="mt">Almoço</div><div class="mf">Frango + arroz + espinafre</div></div><div class="ms"><div class="mt">Lanche T</div><div class="mf">Ovo cozido em pedaços</div></div><div class="ms"><div class="mt">Jantar</div><div class="mf">Omelete + purê de batata-doce</div></div></div>
+        <div class="dc"><div class="dh">Sexta</div><div class="ms"><div class="mt">Café</div><div class="mf">Vitamina de banana com espinafre</div></div><div class="ms"><div class="mt">Lanche M</div><div class="mf">Abacate amassado com limão</div></div><div class="ms"><div class="mt">Almoço</div><div class="mf">Macarrão + frango + cenoura</div></div><div class="ms"><div class="mt">Lanche T</div><div class="mf">Iogurte com banana</div></div><div class="ms"><div class="mt">Jantar</div><div class="mf">Arroz + feijão + beterraba cozida</div></div></div>
+      </div>
+    </div>
+
+    <!-- PROGRESSÃO -->
+    <div class="page" id="page-progressao">
+      <div class="sec-h"><div><h2>Tabela de Progressão</h2><p>Bônus 3 — Acompanhe cada alimento</p></div><button class="btn2 bp" onclick="togProg()">+ Adicionar</button></div>
+      <div class="card" style="margin-bottom:12px"><div class="card-title">📊 Legenda</div><div style="display:flex;gap:12px;flex-wrap:wrap"><div style="display:flex;align-items:center;gap:4px"><span class="pb pb-R">R</span><span style="font-size:11px">Recusou</span></div><div style="display:flex;align-items:center;gap:4px"><span class="pb pb-T">T</span><span style="font-size:11px">Tocou</span></div><div style="display:flex;align-items:center;gap:4px"><span class="pb pb-C">C</span><span style="font-size:11px">Cheirou</span></div><div style="display:flex;align-items:center;gap:4px"><span class="pb pb-P">P</span><span style="font-size:11px">Provou</span></div><div style="display:flex;align-items:center;gap:4px"><span class="pb pb-A">A</span><span style="font-size:11px">Aceitou</span></div></div></div>
+      <div id="prog-form-c" style="display:none"><div class="card"><div class="card-title">Novo Alimento</div><div class="g2"><div class="fg"><label class="fl">Alimento</label><input type="text" class="fi" id="prog-al" placeholder="Ex: Brócolis"></div><div class="fg"><label class="fl">Meta</label><input type="text" class="fi" id="prog-meta" placeholder="Ex: Aceitar cozido no vapor"></div></div><div style="display:flex;gap:8px"><button class="btn2 bp" onclick="saveProgItem()">Adicionar</button><button class="btn2 bs" onclick="togProg()">Cancelar</button></div></div></div>
+      <div class="card"><table class="progress-table" id="prog-table" style="display:none"><thead><tr><th>Alimento</th><th>Meta</th><th>Desde</th><th>Status</th><th>Atualizar</th><th></th></tr></thead><tbody id="prog-tbody"></tbody></table><div id="prog-empty" class="empty-state"><div class="ei">📊</div><h3>Nenhum alimento cadastrado</h3><p>Adicione alimentos para acompanhar</p></div></div>
+    </div>
+
+    <!-- TÉCNICAS -->
+    <div class="page" id="page-tecnicas">
+      <div class="sec-h"><div><h2>Técnicas de Aceitação</h2><p>Baseadas em neurociência pediátrica</p></div></div>
+      <div class="al al-w">💡 Não aplique mais de duas técnicas novas por semana. Escolha uma, seja consistente por 10 dias.</div>
+      <div class="g2">
+        <div class="card"><div class="card-title">🍽️ Técnica 1 — Prato de Exploração</div><p style="font-size:13px;line-height:1.6;margin-bottom:10px">Uma vez por semana, monte um prato só para explorar — sem expectativa de comer. 5-6 alimentos, incluindo novidades.</p><div class="al al-s" style="margin-bottom:0">✅ Encoraje tocar, cheirar, lamber. Sem pressão = menos resistência.</div></div>
+        <div class="card"><div class="card-title">📅 Técnica 2 — Exposição Escalonada</div><div style="display:flex;flex-direction:column;gap:5px">
+          <div style="display:flex;align-items:center;gap:6px;font-size:12px"><span style="background:var(--red);color:#fff;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;font-size:10px">1</span>Alimento no prato sem obrigação</div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:12px"><span style="background:var(--red);color:#fff;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;font-size:10px">2</span>Peça que toque</div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:12px"><span style="background:var(--red);color:#fff;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;font-size:10px">3</span>Peça que cheire</div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:12px"><span style="background:var(--red);color:#fff;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;font-size:10px">4</span>Peça que lamba</div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:12px"><span style="background:var(--red);color:#fff;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;font-size:10px">5</span>Morda e cuspa se quiser</div>
+        </div></div>
+        <div class="card"><div class="card-title">🪞 Técnica 3 — O Espelho</div><p style="font-size:13px;line-height:1.6">Coma o mesmo alimento com expressão genuína de prazer. "Hmmm, que gostoso!"</p><div class="al al-i" style="margin-top:9px;margin-bottom:0">🧠 Neurônios-espelho registram isso como informação de segurança.</div></div>
+        <div class="card"><div class="card-title">🌉 Técnica 5 — Ponte de Sabor</div><div style="display:flex;flex-direction:column;gap:4px;font-size:12px">
+          <div style="padding:4px 8px;background:var(--bg);border-radius:6px">🍌 Ama banana → misture com aveia</div>
+          <div style="padding:4px 8px;background:var(--bg);border-radius:6px">🍝 Ama macarrão → adicione abobrinha ralada</div>
+          <div style="padding:4px 8px;background:var(--bg);border-radius:6px">🍗 Ama frango → misture ao arroz com espinafre</div>
+          <div style="padding:4px 8px;background:var(--bg);border-radius:6px">🥚 Ama omelete → adicione abobrinha picada</div>
+        </div></div>
+      </div>
+      <div class="card"><div class="card-title">📏 Regra das 15 Exposições</div><div class="al al-i" style="margin-bottom:10px">🧠 Um bebê pode precisar de <strong>10 a 15 exposições</strong> antes de aceitar um alimento. Ver, cheirar, tocar, provar — tudo conta.</div><p style="font-size:13px;color:var(--text);line-height:1.6">Quando seu filho recusa o brócolis pela 4ª vez, ele está dizendo <em>"ainda estou processando"</em>, não <em>"odeio isso para sempre"</em>.</p></div>
+    </div>
+
+    <!-- FRASES -->
+    <div class="page" id="page-frases">
+      <div class="sec-h"><div><h2>Guia de Frases</h2><p>Bônus 2 — O que dizer na hora das refeições</p></div></div>
+      <div class="al al-w" style="margin-bottom:16px">💬 Pequenas mudanças de linguagem criam associações duradouras com a comida.</div>
+      <div class="g2">
+        <div><h3 style="font-size:13px;font-weight:700;color:var(--red);margin-bottom:8px">🚫 Elimine Estas Frases</h3>
+          <div class="ci-item ci-bad"><div class="ci-ico">❌</div><div><div class="ci-ph">"Você não gosta disso."</div><div class="ci-rep">→ "Você ainda está conhecendo esse sabor."</div></div></div>
+          <div class="ci-item ci-bad"><div class="ci-ico">❌</div><div><div class="ci-ph">"Se comer tudo, ganha sobremesa."</div><div class="ci-rep">→ Ofereça sobremesa sem condição.</div></div></div>
+          <div class="ci-item ci-bad"><div class="ci-ico">❌</div><div><div class="ci-ph">"Só mais uma colherada."</div><div class="ci-rep">→ Confie no sinal de saciedade da criança.</div></div></div>
+          <div class="ci-item ci-bad"><div class="ci-ico">❌</div><div><div class="ci-ph">"Você é muito chato para comer."</div><div class="ci-rep">→ Evite rótulos que viram identidade.</div></div></div>
+          <div class="ci-item ci-bad"><div class="ci-ico">❌</div><div><div class="ci-ph">"Olha o aviãozinho!"</div><div class="ci-rep">→ A criança precisa estar consciente do que come.</div></div></div>
+          <div class="ci-item ci-bad"><div class="ci-ico">❌</div><div><div class="ci-ph">"Come logo que vai esfriar."</div><div class="ci-rep">→ Deixe a refeição acontecer sem pressa.</div></div></div>
+        </div>
+        <div><h3 style="font-size:13px;font-weight:700;color:var(--green);margin-bottom:8px">✅ Use Estas Frases</h3>
+          <div class="ci-item ci-good"><div class="ci-ico">✅</div><div><div class="ci-ph">"Hoje tem cenoura. Quer tocar antes de provar?"</div></div></div>
+          <div class="ci-item ci-good"><div class="ci-ico">✅</div><div><div class="ci-ph">"Você experimentou! Que aventura!"</div></div></div>
+          <div class="ci-item ci-good"><div class="ci-ico">✅</div><div><div class="ci-ph">"Não precisa comer se não quiser. Fica no prato."</div></div></div>
+          <div class="ci-item ci-good"><div class="ci-ico">✅</div><div><div class="ci-ph">"Hmm, que gostoso este brócolis!" (genuíno)</div></div></div>
+          <div class="ci-item ci-good"><div class="ci-ico">✅</div><div><div class="ci-ph">"Você escolhe: tigela verde ou azul?"</div></div></div>
+          <div class="ci-item ci-good"><div class="ci-ico">✅</div><div><div class="ci-ph">"Esse tem gosto diferente mesmo. É normal."</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RECEITAS -->
+    <div class="page" id="page-receitas">
+      <div class="sec-h"><div><h2>Receitas de Aceitação</h2><p>Sem sal, sem açúcar — para começar hoje</p></div></div>
+      <div class="g2">
+        <div class="card"><div class="card-title">🍠 Purê Batata-doce com Frango</div><span style="font-size:10px;background:#fff0f0;color:var(--red);padding:2px 8px;border-radius:20px;display:inline-block;margin-bottom:9px">6 a 12 meses</span><div style="font-size:11px;font-weight:700;color:var(--light);margin-bottom:5px;text-transform:uppercase">Ingredientes</div><ul style="font-size:12px;padding-left:14px;line-height:2"><li>2 batatas-doces médias cozidas</li><li>100g frango cozido desfiado fino</li><li>2 col. sopa de azeite</li></ul><div style="font-size:11px;font-weight:700;color:var(--light);margin:8px 0 4px;text-transform:uppercase">Preparo</div><p style="font-size:12px;line-height:1.6">Amasse a batata-doce, misture frango e azeite. Ajuste consistência com água do cozimento. Sirva morno.</p></div>
+        <div class="card"><div class="card-title">🥚 Omelete de Abobrinha</div><span style="font-size:10px;background:#fff0f0;color:var(--red);padding:2px 8px;border-radius:20px;display:inline-block;margin-bottom:9px">10 meses em diante</span><div style="font-size:11px;font-weight:700;color:var(--light);margin-bottom:5px;text-transform:uppercase">Ingredientes</div><ul style="font-size:12px;padding-left:14px;line-height:2"><li>2 ovos</li><li>1/4 abobrinha ralada fina</li><li>1 col. sopa de azeite</li></ul><div style="font-size:11px;font-weight:700;color:var(--light);margin:8px 0 4px;text-transform:uppercase">Preparo</div><p style="font-size:12px;line-height:1.6">Misture ovos com abobrinha ralada. Cozinhe em frigideira antiaderente com azeite, fogo baixo. Corte em tiras.</p></div>
+        <div class="card"><div class="card-title">🥤 Vitamina Verde</div><span style="font-size:10px;background:#e8f5e9;color:var(--green);padding:2px 8px;border-radius:20px;display:inline-block;margin-bottom:9px">Qualquer fase</span><div style="font-size:11px;font-weight:700;color:var(--light);margin-bottom:5px;text-transform:uppercase">Ingredientes</div><ul style="font-size:12px;padding-left:14px;line-height:2"><li>1 banana madura congelada</li><li>1/2 xíc. leite ou bebida vegetal</li><li>1 folhinha de espinafre</li><li>1 col. sopa de aveia</li></ul><div style="font-size:11px;font-weight:700;color:var(--light);margin:8px 0 4px;text-transform:uppercase">Preparo</div><p style="font-size:12px;line-height:1.6">Bata tudo no liquidificador. Sirva gelado. <strong>Aumente gradualmente o espinafre.</strong></p></div>
+        <div class="card"><div class="card-title">🥞 Panqueca de Banana e Aveia</div><span style="font-size:10px;background:#fff0f0;color:var(--red);padding:2px 8px;border-radius:20px;display:inline-block;margin-bottom:9px">12 meses em diante</span><div style="font-size:11px;font-weight:700;color:var(--light);margin-bottom:5px;text-transform:uppercase">Ingredientes</div><ul style="font-size:12px;padding-left:14px;line-height:2"><li>1 banana amassada</li><li>1 ovo</li><li>3 col. sopa de aveia</li></ul><div style="font-size:11px;font-weight:700;color:var(--light);margin:8px 0 4px;text-transform:uppercase">Preparo</div><p style="font-size:12px;line-height:1.6">Misture tudo, frite em frigideira com azeite, fogo baixo. Corte em pedaços para comer com as mãos.</p><div class="al al-i" style="margin-top:8px;margin-bottom:0">❄️ Congele em porções individuais.</div></div>
+      </div>
+    </div>
+
+    <!-- ALERTAS -->
+    <div class="page" id="page-alertas">
+      <div class="sec-h"><div><h2>Sinais de Alerta</h2><p>Quando buscar ajuda profissional</p></div></div>
+      <div class="g2">
+        <div class="card"><div class="card-title">🚨 Avaliação Médica Urgente</div><div style="display:flex;flex-direction:column;gap:7px"><div class="al al-d" style="margin-bottom:0">🔴 Perda de peso ou falha em ganhar peso</div><div class="al al-d" style="margin-bottom:0">🔴 Engasgamento frequente</div><div class="al al-d" style="margin-bottom:0">🔴 Vômitos recorrentes nas refeições</div><div class="al al-d" style="margin-bottom:0">🔴 Choro intenso e consistente na hora de comer</div><div class="al al-d" style="margin-bottom:0">🔴 Recusa de toda uma categoria alimentar</div><div class="al al-d" style="margin-bottom:0">🔴 Menos de 15 alimentos após os 2 anos</div></div></div>
+        <div class="card"><div class="card-title">👩‍⚕️ Profissionais Indicados</div><div style="display:flex;flex-direction:column;gap:8px"><div style="padding:9px;background:var(--bg);border-radius:8px"><div style="font-weight:700;font-size:12px">🩺 Pediatra</div><div style="font-size:11px;color:var(--light);margin-top:1px">Primeira linha — descarta causas orgânicas</div></div><div style="padding:9px;background:var(--bg);border-radius:8px"><div style="font-weight:700;font-size:12px">🥗 Nutricionista Pediátrico</div><div style="font-size:11px;color:var(--light);margin-top:1px">Progressão alimentar e planejamento</div></div><div style="padding:9px;background:var(--bg);border-radius:8px"><div style="font-weight:700;font-size:12px">💬 Fonoaudiólogo Pediátrico</div><div style="font-size:11px;color:var(--light);margin-top:1px">Função oral, deglutição e mastigação</div></div><div style="padding:9px;background:var(--bg);border-radius:8px"><div style="font-weight:700;font-size:12px">🧩 Terapeuta Ocupacional</div><div style="font-size:11px;color:var(--light);margin-top:1px">Integração sensorial</div></div></div></div>
+      </div>
+    </div>
+
+  </div><!-- end main -->
+</div><!-- end app -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// =====================
+// SUPABASE CONFIG
+// =====================
+const {createClient}=supabase;
+let sb=null;
+let currentUser=null;
+
+function getConfig(){
+  return{url:localStorage.getItem('sb_url'),key:localStorage.getItem('sb_key')};
+}
+function saveConfig(){
+  const url=document.getElementById('cfg-url').value.trim();
+  const key=document.getElementById('cfg-key').value.trim();
+  if(!url||!key){alert('Preencha URL e Key do Supabase.');return;}
+  localStorage.setItem('sb_url',url);
+  localStorage.setItem('sb_key',key);
+  location.reload();
+}
+
+async function initApp(){
+  const cfg=getConfig();
+  document.getElementById('loading').style.display='none';
+  if(!cfg.url||!cfg.key){
+    document.getElementById('configScreen').style.display='flex';
+    return;
+  }
+  try{
+    sb=createClient(cfg.url,cfg.key);
+    const{data:{session}}=await sb.auth.getSession();
+    if(session){
+      currentUser=session.user;
+      showApp();
+    }else{
+      document.getElementById('authScreen').style.display='flex';
+    }
+  }catch(e){
+    document.getElementById('configScreen').style.display='flex';
+  }
+}
+
+// =====================
+// AUTH
+// =====================
+function switchTab(tab){
+  document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.auth-form').forEach(f=>f.classList.remove('active'));
+  document.querySelector(`.auth-tab:${tab==='login'?'first':'last'}-child`).classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+  document.getElementById('auth-error').style.display='none';
+}
+async function doLogin(){
+  const email=document.getElementById('login-email').value.trim();
+  const pass=document.getElementById('login-pass').value;
+  if(!email||!pass){showAuthError('Preencha email e senha.');return;}
+  const{data,error}=await sb.auth.signInWithPassword({email,password:pass});
+  if(error){showAuthError(error.message==='Invalid login credentials'?'Email ou senha incorretos.':error.message);}
+  else{currentUser=data.user;document.getElementById('authScreen').style.display='none';showApp();}
+}
+async function doRegister(){
+  const name=document.getElementById('reg-name').value.trim();
+  const email=document.getElementById('reg-email').value.trim();
+  const pass=document.getElementById('reg-pass').value;
+  if(!name||!email||!pass){showAuthError('Preencha todos os campos.');return;}
+  if(pass.length<6){showAuthError('Senha deve ter no mínimo 6 caracteres.');return;}
+  const{data,error}=await sb.auth.signUp({email,password:pass,options:{data:{full_name:name}}});
+  if(error){showAuthError(error.message);}
+  else{showAuthError('Conta criada! Verifique seu email para confirmar.',true);setTimeout(()=>switchTab('login'),3000);}
+}
+async function doLogout(){
+  await sb.auth.signOut();
+  location.reload();
+}
+function showAuthError(msg,info=false){
+  const el=document.getElementById('auth-error');
+  el.textContent=msg;el.style.display='block';
+  if(info){el.style.background='#e8f5e9';el.style.color='var(--green)';el.style.borderColor='#c3e6cb';}
+}
+
+// =====================
+// APP
+// =====================
+function showApp(){
+  document.getElementById('appMain').style.display='flex';
+  if(currentUser){
+    const meta=currentUser.user_metadata||{};
+    document.getElementById('user-name-display').textContent=meta.full_name||'Usuária';
+    document.getElementById('user-email-display').textContent=currentUser.email;
+  }
+  loadAll();
+}
+
+// =====================
+// LOCAL STATE (fallback + cache)
+// =====================
+let S={perfil:null,tags:{alergias:[],aceitos:[],recusados:[],texturas:[]},diario:[],progressao:[],react:null};
+let TX=[];
+
+// =====================
+// SUPABASE DB HELPERS
+// =====================
+async function loadAll(){
+  if(!sb||!currentUser){loadLocal();return;}
+  try{
+    const uid=currentUser.id;
+    const[cr,di,pr]=await Promise.all([
+      sb.from('criancas').select('*').eq('user_id',uid).maybeSingle(),
+      sb.from('diario').select('*').eq('user_id',uid).order('created_at',{ascending:false}),
+      sb.from('progressao').select('*').eq('user_id',uid).order('created_at',{ascending:true})
+    ]);
+    if(cr.data)S.perfil=cr.data;
+    if(di.data)S.diario=di.data;
+    if(pr.data)S.progressao=pr.data;
+    if(S.perfil){S.tags.alergias=S.perfil.alergias||[];S.tags.aceitos=S.perfil.aceitos||[];S.tags.recusados=S.perfil.recusados||[];TX=S.perfil.texturas||[];}
+    if(!S.progressao.length)await seedProgressao();
+  }catch(e){loadLocal();}
+  updDash();renderPerfil();renderDiary();renderProg();
+  document.getElementById('d-date').value=new Date().toISOString().split('T')[0];
+}
+
+async function seedProgressao(){
+  if(!sb||!currentUser)return;
+  const uid=currentUser.id;
+  const seeds=[
+    {user_id:uid,alimento:'Brócolis',meta:'Aceitar cozido no vapor',data_inicio:new Date().toISOString().split('T')[0],status:'R'},
+    {user_id:uid,alimento:'Espinafre',meta:'Aceitar em vitamina',data_inicio:new Date().toISOString().split('T')[0],status:'R'},
+    {user_id:uid,alimento:'Beterraba',meta:'Aceitar cozida ou assada',data_inicio:new Date().toISOString().split('T')[0],status:'R'},
+    {user_id:uid,alimento:'Lentilha',meta:'Aceitar amassada no arroz',data_inicio:new Date().toISOString().split('T')[0],status:'R'},
+  ];
+  const{data}=await sb.from('progressao').insert(seeds).select();
+  if(data)S.progressao=data;
+}
+
+function loadLocal(){
+  const d=localStorage.getItem('mfc_local');
+  if(d)try{const p=JSON.parse(d);S={...S,...p};}catch(e){}
+}
+function saveLocal(){localStorage.setItem('mfc_local',JSON.stringify({perfil:S.perfil,tags:S.tags,diario:S.diario,progressao:S.progressao}));}
+
+// =====================
+// NAV
+// =====================
+const PT={dashboard:['Dashboard','Bem-vinda!'],perfil:['Perfil da Criança','Informações do bebê'],diario:['Diário Alimentar','Registros de refeições'],cardapio:['Cardápio Semanal','Bônus 1'],progressao:['Tabela de Progressão','Bônus 3'],tecnicas:['Técnicas','Baseadas em neurociência'],frases:['Guia de Frases','Bônus 2'],receitas:['Receitas','Para começar hoje'],alertas:['Sinais de Alerta','Quando buscar ajuda']};
+function go(pg){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+pg).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>{if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+pg+"'"))n.classList.add('active');});
+  const t=PT[pg]||[pg,''];
+  document.getElementById('hTitle').textContent=t[0];
+  document.getElementById('hSub').textContent=t[1];
+  if(pg==='dashboard')updDash();
+}
+
+// =====================
+// TAGS
+// =====================
+function addTag(e,type){
+  if(e.key==='Enter'||e.key===','){e.preventDefault();const v=e.target.value.trim().replace(',','');if(v){S.tags[type].push(v);renderTags(type);e.target.value='';}}
+}
+function renderTags(type){
+  const c=document.getElementById('tc-'+type);if(!c)return;
+  const inp=c.querySelector('.ti');c.innerHTML='';
+  (S.tags[type]||[]).forEach((t,i)=>{
+    const el=document.createElement('span');
+    el.className='tag '+(type==='aceitos'?'tag-g':type==='texturas'?'tag-y':'tag-r');
+    el.innerHTML=`${t} <span class="tag-x" onclick="rmTag('${type}',${i})">×</span>`;
+    c.appendChild(el);
+  });
+  if(inp)c.appendChild(inp);
+}
+function rmTag(type,i){S.tags[type].splice(i,1);renderTags(type);}
+function updTex(cb){if(cb.checked){if(!TX.includes(cb.value))TX.push(cb.value);}else TX=TX.filter(t=>t!==cb.value);renderTX();}
+function addTexC(){const inp=document.getElementById('tex-c');if(inp.value.trim()){TX.push(inp.value.trim());renderTX();inp.value='';}}
+function renderTX(){const c=document.getElementById('tc-texturas');c.innerHTML='';TX.forEach((t,i)=>{const el=document.createElement('span');el.className='tag tag-y';el.innerHTML=`${t} <span class="tag-x" onclick="TX.splice(${i},1);renderTX()">×</span>`;c.appendChild(el);});}
+
+// =====================
+// PERFIL
+// =====================
+async function savePerfil(){
+  const nome=document.getElementById('p-nome').value.trim();
+  if(!nome){toast('Informe o nome da criança.',false);return;}
+  const data={nome,idade:document.getElementById('p-idade').value,peso:document.getElementById('p-peso').value,fase:document.getElementById('p-fase').value,alergias:[...S.tags.alergias],aceitos:[...S.tags.aceitos],recusados:[...S.tags.recusados],texturas:[...TX],rotina:{cafe:{h:document.getElementById('r-cafe-h').value,a:document.getElementById('r-cafe-a').value},l1:{h:document.getElementById('r-l1-h').value,a:document.getElementById('r-l1-a').value},alm:{h:document.getElementById('r-alm-h').value,a:document.getElementById('r-alm-a').value},l2:{h:document.getElementById('r-l2-h').value,a:document.getElementById('r-l2-a').value},jan:{h:document.getElementById('r-jan-h').value,a:document.getElementById('r-jan-a').value}},obs:document.getElementById('p-obs').value};
+  if(sb&&currentUser){
+    const uid=currentUser.id;
+    if(S.perfil&&S.perfil.id){await sb.from('criancas').update({...data}).eq('id',S.perfil.id);}
+    else{const{data:d}=await sb.from('criancas').insert({user_id:uid,...data}).select().single();if(d)S.perfil=d;}
+  }
+  S.perfil={...S.perfil,...data};saveLocal();
+  toast('Perfil salvo!',true);renderPerfil();updDash();
+}
+function renderPerfil(){
+  if(!S.perfil){document.getElementById('perfil-display').style.display='none';document.getElementById('perfil-form').style.display='block';return;}
+  const p=S.perfil;
+  document.getElementById('perfil-display').style.display='block';document.getElementById('perfil-form').style.display='none';
+  document.getElementById('dn').textContent=p.nome;document.getElementById('di').textContent=(p.idade||'')+(p.peso?' · '+p.peso+' kg':'');
+  document.getElementById('df').textContent=p.fase||'Fase não informada';document.getElementById('dp').textContent=p.peso?p.peso+' kg':'';
+  const tl=(id,items,cls)=>{const el=document.getElementById(id);el.innerHTML=items.length>0?items.map(t=>`<span class="tag ${cls}">${t}</span>`).join(''):'<span style="color:var(--light);font-size:11px">Nenhum informado</span>';};
+  tl('dac',p.aceitos||[],'tag-g');tl('drec',p.recusados||[],'tag-r');tl('dal',p.alergias||[],'tag-r');tl('dtex',p.texturas||[],'tag-y');
+  const r=p.rotina||{};
+  document.getElementById('drot').innerHTML=[['Café da manhã',r.cafe],['Lanche da manhã',r.l1],['Almoço',r.alm],['Lanche da tarde',r.l2],['Jantar',r.jan]].map(([n,m])=>`<div class="ri"><div class="rtime">${m?.h||'--:--'}</div><div class="rmeal">${n}</div><div class="rdet">${m?.a||'—'}</div></div>`).join('');
+  document.getElementById('dobs').textContent=p.obs||'Sem observações.';
+}
+function editPerfil(){
+  if(!S.perfil)return;const p=S.perfil;
+  document.getElementById('perfil-display').style.display='none';document.getElementById('perfil-form').style.display='block';
+  document.getElementById('p-nome').value=p.nome;document.getElementById('p-idade').value=p.idade||'';document.getElementById('p-peso').value=p.peso||'';document.getElementById('p-fase').value=p.fase||'';
+  S.tags.alergias=[...(p.alergias||[])];S.tags.aceitos=[...(p.aceitos||[])];S.tags.recusados=[...(p.recusados||[])];TX=[...(p.texturas||[])];
+  ['alergias','aceitos','recusados'].forEach(t=>renderTags(t));renderTX();
+  const r=p.rotina||{};
+  document.getElementById('r-cafe-h').value=r.cafe?.h||'07:00';document.getElementById('r-cafe-a').value=r.cafe?.a||'';
+  document.getElementById('r-l1-h').value=r.l1?.h||'10:00';document.getElementById('r-l1-a').value=r.l1?.a||'';
+  document.getElementById('r-alm-h').value=r.alm?.h||'12:00';document.getElementById('r-alm-a').value=r.alm?.a||'';
+  document.getElementById('r-l2-h').value=r.l2?.h||'15:00';document.getElementById('r-l2-a').value=r.l2?.a||'';
+  document.getElementById('r-jan-h').value=r.jan?.h||'18:30';document.getElementById('r-jan-a').value=r.jan?.a||'';
+  document.getElementById('p-obs').value=p.obs||'';
+}
+
+// =====================
+// DIÁRIO
+// =====================
+function togDiary(){const f=document.getElementById('diary-form-c');f.style.display=f.style.display==='none'?'block':'none';if(f.style.display==='block'){document.getElementById('d-date').value=new Date().toISOString().split('T')[0];S.react=null;document.querySelectorAll('.rbtn').forEach(b=>b.className='rbtn');}}
+function selR(btn,r){document.querySelectorAll('.rbtn').forEach(b=>b.className='rbtn');S.react=r;btn.className='rbtn s'+r;}
+async function saveDiary(){
+  const foods=document.getElementById('d-foods').value.trim();if(!foods){toast('Informe os alimentos.',false);return;}
+  const entry={date:document.getElementById('d-date').value,meal:document.getElementById('d-meal').value,foods,reaction:S.react||'R',obs:document.getElementById('d-obs').value};
+  if(sb&&currentUser){const{data}=await sb.from('diario').insert({user_id:currentUser.id,...entry}).select().single();if(data)S.diario.unshift(data);}
+  else{S.diario.unshift({id:Date.now(),...entry});saveLocal();}
+  document.getElementById('d-foods').value='';document.getElementById('d-obs').value='';S.react=null;document.querySelectorAll('.rbtn').forEach(b=>b.className='rbtn');
+  togDiary();renderDiary();updDash();toast('Registrado!',true);
+}
+const RL={R:'🚫 Recusou',T:'👋 Tocou',C:'👃 Cheirou',P:'👅 Provou',A:'✅ Aceitou'};
+function renderDiary(){
+  const c=document.getElementById('diary-entries');
+  if(!S.diario.length){c.innerHTML='<div class="empty-state"><div class="ei">📖</div><h3>Nenhuma entrada</h3><p>Registre a primeira refeição</p></div>';return;}
+  c.innerHTML=S.diario.map(e=>`<div class="de"><div class="eh"><div><div class="emeal">${e.meal}</div><div class="edate">${fd(e.date)}</div></div><div style="display:flex;align-items:center;gap:6px"><span class="pb pb-${e.reaction}">${RL[e.reaction]||e.reaction}</span><button onclick="delDiary('${e.id}')" style="background:none;border:none;cursor:pointer;color:var(--light);font-size:14px">🗑️</button></div></div><div style="font-size:12px"><strong>Alimentos:</strong> ${e.foods}</div>${e.obs?`<div style="font-size:11px;color:var(--light);margin-top:4px">${e.obs}</div>`:''}</div>`).join('');
+}
+async function delDiary(id){
+  if(sb&&currentUser)await sb.from('diario').delete().eq('id',id);
+  S.diario=S.diario.filter(e=>String(e.id)!==String(id));saveLocal();renderDiary();updDash();toast('Removido.',true);
+}
+
+// =====================
+// PROGRESSÃO
+// =====================
+function togProg(){const f=document.getElementById('prog-form-c');f.style.display=f.style.display==='none'?'block':'none';}
+async function saveProgItem(){
+  const al=document.getElementById('prog-al').value.trim();if(!al){toast('Informe o alimento.',false);return;}
+  const item={alimento:al,meta:document.getElementById('prog-meta').value,data_inicio:new Date().toISOString().split('T')[0],status:'R'};
+  if(sb&&currentUser){const{data}=await sb.from('progressao').insert({user_id:currentUser.id,...item}).select().single();if(data)S.progressao.push(data);}
+  else{S.progressao.push({id:Date.now(),...item});saveLocal();}
+  document.getElementById('prog-al').value='';document.getElementById('prog-meta').value='';togProg();renderProg();toast('Adicionado!',true);
+}
+async function updProgStatus(id,status){
+  const item=S.progressao.find(p=>String(p.id)===String(id));if(!item)return;
+  item.status=status;
+  if(sb&&currentUser)await sb.from('progressao').update({status}).eq('id',id);
+  else saveLocal();
+  renderProg();
+}
+async function delProg(id){
+  if(sb&&currentUser)await sb.from('progressao').delete().eq('id',id);
+  S.progressao=S.progressao.filter(p=>String(p.id)!==String(id));saveLocal();renderProg();
+}
+const SL={R:'Recusou',T:'Tocou',C:'Cheirou',P:'Provou',A:'Aceitou'};
+function renderProg(){
+  const tb=document.getElementById('prog-tbody'),em=document.getElementById('prog-empty'),tbl=document.getElementById('prog-table');
+  if(!S.progressao.length){tb.innerHTML='';em.style.display='block';tbl.style.display='none';return;}
+  tbl.style.display='table';em.style.display='none';
+  tb.innerHTML=S.progressao.map(item=>`<tr><td><strong>${item.alimento}</strong></td><td style="font-size:11px;color:var(--light)">${item.meta||'—'}</td><td style="font-size:11px">${fd(item.data_inicio||item.dataInicio)}</td><td><span class="pb pb-${item.status}">${SL[item.status]}</span></td><td><select onchange="updProgStatus('${item.id}',this.value)" style="padding:3px 7px;border-radius:6px;border:1px solid var(--border);font-size:11px;cursor:pointer">${['R','T','C','P','A'].map(s=>`<option value="${s}"${s===item.status?' selected':''}>${SL[s]}</option>`).join('')}</select></td><td><button onclick="delProg('${item.id}')" style="background:none;border:none;cursor:pointer;color:var(--light);font-size:13px">🗑️</button></td></tr>`).join('');
+}
+
+// =====================
+// DASHBOARD
+// =====================
+function updDash(){
+  document.getElementById('st-ac').textContent=(S.perfil?.aceitos||[]).length;
+  document.getElementById('st-rec').textContent=(S.perfil?.recusados||[]).length;
+  document.getElementById('st-dia').textContent=S.diario.length;
+  document.getElementById('st-prog').textContent=S.progressao.length;
+  const pe=document.getElementById('db-perfil');
+  if(S.perfil){pe.innerHTML=`<div style="display:flex;gap:9px;align-items:center;margin-bottom:12px"><div style="font-size:32px">👶</div><div><div style="font-size:15px;font-weight:800;color:var(--red)">${S.perfil.nome}</div><div style="font-size:11px;color:var(--light)">${S.perfil.idade||''}${S.perfil.peso?' · '+S.perfil.peso+'kg':''}</div></div></div><div class="ig"><div class="ii"><div class="il">Aceitos</div><div class="iv" style="color:var(--green)">${(S.perfil.aceitos||[]).length} alimentos</div></div><div class="ii"><div class="il">Recusados</div><div class="iv" style="color:var(--red)">${(S.perfil.recusados||[]).length} alimentos</div></div><div class="ii"><div class="il">Alergias</div><div class="iv">${(S.perfil.alergias||[]).length>0?S.perfil.alergias.join(', '):'Nenhuma'}</div></div><div class="ii"><div class="il">Fase</div><div class="iv" style="font-size:10px">${S.perfil.fase||'Não informado'}</div></div></div>`;}
+  const re=document.getElementById('db-rotina');
+  if(S.perfil?.rotina){const r=S.perfil.rotina;re.innerHTML='<div class="rt">'+[['☕ Café',r.cafe],['🍌 Lanche M',r.l1],['🍽️ Almoço',r.alm],['🥤 Lanche T',r.l2],['🌙 Jantar',r.jan]].map(([n,m])=>`<div class="ri"><div class="rtime">${m?.h||'--:--'}</div><div class="rmeal">${n}</div><div class="rdet">${m?.a||'—'}</div></div>`).join('')+'</div>';}
+  const de=document.getElementById('db-diary');
+  if(S.diario.length){de.innerHTML=S.diario.slice(0,3).map(e=>`<div style="display:flex;justify-content:space-between;padding:8px;border-radius:8px;background:var(--bg);margin-bottom:6px"><div><div style="font-size:12px;font-weight:600">${e.meal}</div><div style="font-size:11px;color:var(--light)">${e.foods} · ${fd(e.date)}</div></div><span class="pb pb-${e.reaction}" style="align-self:center">${RL[e.reaction]}</span></div>`).join('')+'<a href="#" onclick="go(\'diario\')" style="font-size:11px;color:var(--red);text-decoration:none">Ver todos →</a>';}
+}
+
+function fd(s){if(!s)return'';const[y,m,d]=(s||'').split('-');return d&&m&&y?`${d}/${m}/${y}`:s||'';}
+function toast(msg,ok){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(ok?' ok':'');setTimeout(()=>t.className='toast',3000);}
+
+// START
+initApp();
+</script>
+</body>
+</html>

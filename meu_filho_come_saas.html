@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meu Filho Come! — Plataforma</title>
+<style>
+:root{--primary:#e63946;--primary-light:#ff6b6b;--secondary:#457b9d;--accent:#f4a261;--bg:#f8f9fa;--white:#fff;--text:#2d3436;--text-light:#636e72;--border:#dee2e6;--success:#27ae60;--warning:#f39c12;--sw:260px;--hh:60px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh}
+.sidebar{width:var(--sw);background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;overflow-y:auto}
+.sidebar-logo{padding:20px;border-bottom:1px solid var(--border)}
+.sidebar-logo h1{font-size:19px;color:var(--primary);font-weight:800}
+.sidebar-logo p{font-size:11px;color:var(--text-light);margin-top:2px}
+.nav-section{padding:14px 10px 6px}
+.nav-section-title{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-light);padding:0 8px;margin-bottom:5px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--text);transition:all .2s;margin-bottom:2px}
+.nav-item:hover{background:#f0f0f0}
+.nav-item.active{background:#fff0f0;color:var(--primary);font-weight:600}
+.nav-item .ico{font-size:16px;width:20px;text-align:center}
+.main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column;min-height:100vh}
+.header{background:var(--white);border-bottom:1px solid var(--border);padding:0 24px;height:var(--hh);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.header-title{font-size:17px;font-weight:700}
+.header-subtitle{font-size:12px;color:var(--text-light)}
+.btn{padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:600;transition:all .2s}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:#c0392b}
+.btn-secondary{background:var(--bg);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{background:#e9ecef}
+.page{display:none;padding:22px}
+.page.active{display:block}
+.card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:18px;margin-bottom:14px}
+.card-title{font-size:15px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:7px}
+.card-title .ico{color:var(--primary)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px}
+.stat-card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:18px;text-align:center}
+.stat-card .num{font-size:30px;font-weight:800;color:var(--primary)}
+.stat-card .lbl{font-size:11px;color:var(--text-light);margin-top:3px}
+.stat-card .sico{font-size:26px;margin-bottom:6px}
+.form-group{margin-bottom:14px}
+.form-label{font-size:12px;font-weight:600;color:var(--text);margin-bottom:5px;display:block}
+.form-input,.form-select,.form-textarea{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--white);color:var(--text);transition:border .2s;font-family:inherit}
+.form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:var(--primary)}
+.form-textarea{resize:vertical;min-height:75px}
+.tags-container{border:1px solid var(--border);border-radius:8px;padding:7px;min-height:42px;display:flex;flex-wrap:wrap;gap:5px;background:#fff}
+.tag{background:#fff0f0;color:var(--primary);border:1px solid #ffcccc;padding:3px 10px;border-radius:20px;font-size:12px;display:flex;align-items:center;gap:5px}
+.tag.green{background:#f0fff4;color:var(--success);border-color:#c3e6cb}
+.tag.yellow{background:#fffbf0;color:var(--warning);border-color:#ffeeba}
+.tag-x{cursor:pointer;font-size:14px;opacity:.6}
+.tag-x:hover{opacity:1}
+.tags-input{border:none;outline:none;font-size:13px;min-width:110px;flex:1;font-family:inherit}
+.profile-header{display:flex;align-items:center;gap:18px;padding:18px;background:linear-gradient(135deg,var(--primary) 0%,var(--primary-light) 100%);border-radius:12px;color:#fff;margin-bottom:18px}
+.profile-avatar{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;font-size:32px;flex-shrink:0}
+.profile-info h2{font-size:22px;font-weight:800}
+.profile-info p{font-size:12px;opacity:.85;margin-top:3px}
+.profile-badges{display:flex;gap:7px;margin-top:7px;flex-wrap:wrap}
+.badge{background:rgba(255,255,255,.25);padding:3px 11px;border-radius:20px;font-size:11px}
+.info-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+.info-item{background:var(--bg);border-radius:8px;padding:10px}
+.info-item .il{font-size:10px;color:var(--text-light);text-transform:uppercase;letter-spacing:.5px}
+.info-item .iv{font-size:13px;font-weight:600;margin-top:3px}
+.progress-table{width:100%;border-collapse:collapse}
+.progress-table th{text-align:left;padding:9px 11px;font-size:11px;color:var(--text-light);border-bottom:2px solid var(--border);text-transform:uppercase;letter-spacing:.5px}
+.progress-table td{padding:9px 11px;border-bottom:1px solid var(--border);font-size:13px}
+.progress-table tr:hover td{background:#fafafa}
+.pb{display:inline-block;padding:2px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.pb-R{background:#fff0f0;color:#c0392b}
+.pb-T{background:#fff8e1;color:#f57f17}
+.pb-C{background:#e8f5e9;color:#2e7d32}
+.pb-P{background:#e3f2fd;color:#1565c0}
+.pb-A{background:#f3e5f5;color:#6a1b9a}
+.week-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.day-card{background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.day-header{background:var(--primary);color:#fff;padding:7px 11px;font-size:13px;font-weight:700;text-align:center}
+.meal-slot{padding:7px 11px;border-bottom:1px solid var(--border)}
+.meal-slot:last-child{border-bottom:none}
+.meal-slot .mt{font-size:10px;color:var(--text-light);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.meal-slot .mf{font-size:12px;color:var(--text)}
+.alert{padding:11px 14px;border-radius:8px;margin-bottom:10px;font-size:13px;display:flex;align-items:flex-start;gap:9px;line-height:1.5}
+.alert-info{background:#e3f2fd;color:#1565c0}
+.alert-warning{background:#fff8e1;color:#f57f17}
+.alert-danger{background:#fff0f0;color:#c62828}
+.alert-success{background:#e8f5e9;color:#2e7d32}
+.rotina-timeline{position:relative;padding-left:28px}
+.rotina-item{position:relative;padding-bottom:18px}
+.rotina-item::before{content:'';position:absolute;left:-20px;top:4px;width:9px;height:9px;border-radius:50%;background:var(--primary)}
+.rotina-item::after{content:'';position:absolute;left:-16px;top:13px;width:2px;height:calc(100% - 9px);background:var(--border)}
+.rotina-item:last-child::after{display:none}
+.rotina-item .rtime{font-size:11px;color:var(--text-light);font-weight:600}
+.rotina-item .rmeal{font-size:13px;font-weight:600;margin-top:1px}
+.rotina-item .rdet{font-size:12px;color:var(--text-light)}
+.diary-entry{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px}
+.diary-entry .eh{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.diary-entry .edate{font-size:12px;color:var(--text-light)}
+.diary-entry .emeal{font-size:14px;font-weight:700;color:var(--primary)}
+.reaction-selector{display:flex;gap:7px;flex-wrap:wrap;margin-top:7px}
+.rbtn{padding:5px 13px;border-radius:20px;border:2px solid var(--border);cursor:pointer;font-size:12px;font-weight:600;background:#fff;transition:all .2s}
+.rbtn.sel-R{background:#fff0f0;border-color:#e74c3c;color:#e74c3c}
+.rbtn.sel-T{background:#fff8e1;border-color:#f39c12;color:#f39c12}
+.rbtn.sel-C{background:#e8f5e9;border-color:#27ae60;color:#27ae60}
+.rbtn.sel-P{background:#e3f2fd;border-color:#3498db;color:#3498db}
+.rbtn.sel-A{background:#f3e5f5;border-color:#9b59b6;color:#9b59b6}
+.checklist-item{display:flex;gap:10px;padding:11px;border-radius:8px;margin-bottom:7px;align-items:flex-start}
+.checklist-item.bad{background:#fff0f0;border-left:3px solid var(--primary)}
+.checklist-item.good{background:#f0fff4;border-left:3px solid var(--success)}
+.checklist-ico{font-size:16px;flex-shrink:0;margin-top:1px}
+.checklist-phrase{font-size:13px;font-weight:600}
+.checklist-replace{font-size:12px;color:var(--text-light);margin-top:2px}
+.toast{position:fixed;bottom:22px;right:22px;background:var(--text);color:#fff;padding:11px 18px;border-radius:10px;font-size:13px;z-index:9999;transform:translateY(100px);opacity:0;transition:all .3s}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{background:var(--success)}
+.empty-state{text-align:center;padding:50px 18px;color:var(--text-light)}
+.empty-state .eico{font-size:42px;margin-bottom:10px}
+.empty-state h3{font-size:16px;color:var(--text);margin-bottom:6px}
+.empty-state p{font-size:13px}
+.sec-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.sec-header h2{font-size:19px;font-weight:800}
+.sec-header p{font-size:12px;color:var(--text-light);margin-top:2px}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-thumb{background:#dee2e6;border-radius:3px}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <h1>Meu Filho Come!</h1>
+    <p>Plataforma de Alimentação Infantil</p>
+  </div>
+  <nav>
+    <div class="nav-section">
+      <div class="nav-section-title">Principal</div>
+      <div class="nav-item active" onclick="go('dashboard')"><span class="ico">🏠</span> Dashboard</div>
+      <div class="nav-item" onclick="go('perfil')"><span class="ico">👶</span> Perfil da Criança</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">Alimentação</div>
+      <div class="nav-item" onclick="go('diario')"><span class="ico">📖</span> Diário Alimentar</div>
+      <div class="nav-item" onclick="go('cardapio')"><span class="ico">🍽️</span> Cardápio Semanal</div>
+      <div class="nav-item" onclick="go('progressao')"><span class="ico">📊</span> Tabela de Progressão</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">Conteúdo</div>
+      <div class="nav-item" onclick="go('tecnicas')"><span class="ico">💡</span> Técnicas</div>
+      <div class="nav-item" onclick="go('frases')"><span class="ico">💬</span> Guia de Frases</div>
+      <div class="nav-item" onclick="go('receitas')"><span class="ico">🥗</span> Receitas</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">Suporte</div>
+      <div class="nav-item" onclick="go('alertas')"><span class="ico">⚠️</span> Sinais de Alerta</div>
+    </div>
+  </nav>
+</aside>
+
+<main class="main">
+  <header class="header">
+    <div>
+      <div class="header-title" id="hTitle">Dashboard</div>
+      <div class="header-subtitle" id="hSub">Bem-vinda!</div>
+    </div>
+    <button class="btn btn-primary" onclick="go('diario')">+ Registrar Refeição</button>
+  </header>
+
+  <!-- DASHBOARD -->
+  <div class="page active" id="page-dashboard">
+    <div class="g4" style="margin-bottom:16px">
+      <div class="stat-card"><div class="sico">🍎</div><div class="num" id="st-ac">0</div><div class="lbl">Alimentos Aceitos</div></div>
+      <div class="stat-card"><div class="sico">🚫</div><div class="num" id="st-rec">0</div><div class="lbl">Alimentos Recusados</div></div>
+      <div class="stat-card"><div class="sico">📖</div><div class="num" id="st-dia">0</div><div class="lbl">Registros no Diário</div></div>
+      <div class="stat-card"><div class="sico">⭐</div><div class="num" id="st-prog">0</div><div class="lbl">Na Progressão</div></div>
+    </div>
+    <div class="g2">
+      <div class="card"><div class="card-title"><span class="ico">👶</span> Perfil Rápido</div><div id="db-perfil"><div class="empty-state" style="padding:24px"><div class="eico">👶</div><h3>Sem perfil cadastrado</h3><p>Crie o perfil para começar</p><button class="btn btn-primary" style="margin-top:10px" onclick="go('perfil')">Criar Perfil</button></div></div></div>
+      <div class="card"><div class="card-title"><span class="ico">⏰</span> Rotina de Hoje</div><div id="db-rotina"><div class="empty-state" style="padding:24px"><div class="eico">⏰</div><h3>Rotina não configurada</h3><p>Configure no perfil da criança</p></div></div></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="ico">💡</span> O Método dos 3 Ps</div>
+      <div class="g3">
+        <div style="padding:14px;background:#fff0f0;border-radius:10px;text-align:center"><div style="font-size:26px;margin-bottom:6px">🤝</div><div style="font-weight:700;color:var(--primary);margin-bottom:5px">Paciência</div><div style="font-size:12px;color:#666">A mudança alimentar é lenta. Cada exposição constrói familiaridade, mesmo sem aceitação imediata.</div></div>
+        <div style="padding:14px;background:#f0fff4;border-radius:10px;text-align:center"><div style="font-size:26px;margin-bottom:6px">👨‍👩‍👧</div><div style="font-weight:700;color:var(--success);margin-bottom:5px">Presença</div><div style="font-size:12px;color:#666">Refeições em família, sem telas. Crianças aprendem por observação e imitação.</div></div>
+        <div style="padding:14px;background:#e3f2fd;border-radius:10px;text-align:center"><div style="font-size:26px;margin-bottom:6px">📈</div><div style="font-weight:700;color:#1565c0;margin-bottom:5px">Progressão</div><div style="font-size:12px;color:#666">Do familiar para o novo de forma gradual. Respeite o ritmo único do seu filho.</div></div>
+      </div>
+    </div>
+    <div class="card"><div class="card-title"><span class="ico">📖</span> Últimos Registros</div><div id="db-diary"><div class="empty-state" style="padding:16px"><p>Nenhum registro ainda. <a href="#" onclick="go('diario')" style="color:var(--primary)">Registre a primeira refeição →</a></p></div></div></div>
+  </div>
+
+  <!-- PERFIL -->
+  <div class="page" id="page-perfil">
+    <div class="sec-header"><div><h2>Perfil da Criança</h2><p>Cadastre as informações completas</p></div><button class="btn btn-primary" onclick="savePerfil()">💾 Salvar Perfil</button></div>
+
+    <div id="perfil-display" style="display:none">
+      <div class="profile-header">
+        <div class="profile-avatar">👶</div>
+        <div class="profile-info">
+          <h2 id="dn"></h2>
+          <p id="di"></p>
+          <div class="profile-badges"><span class="badge" id="df"></span><span class="badge" id="dp"></span></div>
+        </div>
+        <button class="btn" style="margin-left:auto;background:rgba(255,255,255,.2);color:#fff" onclick="editPerfil()">✏️ Editar</button>
+      </div>
+      <div class="g2">
+        <div class="card"><div class="card-title"><span class="ico">✅</span> Alimentos Aceitos</div><div id="dac" style="display:flex;flex-wrap:wrap;gap:6px"></div></div>
+        <div class="card"><div class="card-title"><span class="ico">🚫</span> Alimentos Recusados</div><div id="drec" style="display:flex;flex-wrap:wrap;gap:6px"></div></div>
+      </div>
+      <div class="g2">
+        <div class="card"><div class="card-title"><span class="ico">⚠️</span> Alergias</div><div id="dal" style="display:flex;flex-wrap:wrap;gap:6px"></div></div>
+        <div class="card"><div class="card-title"><span class="ico">🍞</span> Texturas Rejeitadas</div><div id="dtex" style="display:flex;flex-wrap:wrap;gap:6px"></div></div>
+      </div>
+      <div class="card"><div class="card-title"><span class="ico">⏰</span> Rotina Alimentar</div><div id="drot" class="rotina-timeline"></div></div>
+      <div class="card"><div class="card-title"><span class="ico">📝</span> Observações</div><div id="dobs" style="font-size:13px;line-height:1.6"></div></div>
+    </div>
+
+    <div id="perfil-form">
+      <div class="card">
+        <div class="card-title"><span class="ico">👶</span> Informações Básicas</div>
+        <div class="g2">
+          <div class="form-group"><label class="form-label">Nome *</label><input type="text" class="form-input" id="p-nome" placeholder="Ex: Miguel"></div>
+          <div class="form-group"><label class="form-label">Idade *</label><input type="text" class="form-input" id="p-idade" placeholder="Ex: 14 meses"></div>
+          <div class="form-group"><label class="form-label">Peso (kg)</label><input type="text" class="form-input" id="p-peso" placeholder="Ex: 10,5"></div>
+          <div class="form-group"><label class="form-label">Fase</label>
+            <select class="form-select" id="p-fase">
+              <option value="">Selecione...</option>
+              <option value="6-8 meses — Janela de Ouro">6 a 8 meses — Janela de Ouro</option>
+              <option value="8-12 meses — Descoberta das Texturas">8 a 12 meses — Descoberta das Texturas</option>
+              <option value="12-18 meses — Autonomia">12 a 18 meses — Autonomia</option>
+              <option value="18m-2 anos — Pico da Neofobia">18 meses a 2 anos — Pico da Neofobia</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="ico">⚠️</span> Alergias Alimentares</div>
+        <label class="form-label">Digite e pressione Enter</label>
+        <div class="tags-container" id="tc-alergias"><input type="text" class="tags-input" placeholder="Ex: Lactose, Glúten..." onkeydown="addTag(event,'alergias')"></div>
+      </div>
+      <div class="g2">
+        <div class="card">
+          <div class="card-title"><span class="ico">✅</span> Alimentos Aceitos</div>
+          <label class="form-label">Digite e pressione Enter</label>
+          <div class="tags-container" id="tc-aceitos"><input type="text" class="tags-input" placeholder="Ex: Banana, Frango..." onkeydown="addTag(event,'aceitos')"></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="ico">🚫</span> Alimentos Recusados</div>
+          <label class="form-label">Digite e pressione Enter</label>
+          <div class="tags-container" id="tc-recusados"><input type="text" class="tags-input" placeholder="Ex: Brócolis, Cenoura..." onkeydown="addTag(event,'recusados')"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="ico">🍞</span> Texturas Rejeitadas</div>
+        <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px">
+          <label style="display:flex;align-items:center;gap:5px;cursor:pointer;padding:7px 12px;border:1px solid var(--border);border-radius:20px;font-size:12px"><input type="checkbox" value="Grumos no purê" onchange="updTex(this)"> Grumos no purê</label>
+          <label style="display:flex;align-items:center;gap:5px;cursor:pointer;padding:7px 12px;border:1px solid var(--border);border-radius:20px;font-size:12px"><input type="checkbox" value="Fibras longas" onchange="updTex(this)"> Fibras longas</label>
+          <label style="display:flex;align-items:center;gap:5px;cursor:pointer;padding:7px 12px;border:1px solid var(--border);border-radius:20px;font-size:12px"><input type="checkbox" value="Alimentos esfarelados" onchange="updTex(this)"> Esfarelados</label>
+          <label style="display:flex;align-items:center;gap:5px;cursor:pointer;padding:7px 12px;border:1px solid var(--border);border-radius:20px;font-size:12px"><input type="checkbox" value="Alimentos misturados" onchange="updTex(this)"> Misturados</label>
+          <label style="display:flex;align-items:center;gap:5px;cursor:pointer;padding:7px 12px;border:1px solid var(--border);border-radius:20px;font-size:12px"><input type="checkbox" value="Alimentos pegajosos" onchange="updTex(this)"> Pegajosos</label>
+          <label style="display:flex;align-items:center;gap:5px;cursor:pointer;padding:7px 12px;border:1px solid var(--border);border-radius:20px;font-size:12px"><input type="checkbox" value="Pedaços sólidos" onchange="updTex(this)"> Pedaços sólidos</label>
+        </div>
+        <input type="text" class="form-input" id="tex-custom" placeholder="Outra textura..." onkeydown="if(event.key==='Enter'){addTexCustom()}">
+        <div id="tc-texturas" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="ico">⏰</span> Rotina Alimentar</div>
+        <div class="alert alert-info">ℹ️ Estrutura recomendada (1-2 anos): Café 7h · Lanche manhã 10h · Almoço 12h · Lanche tarde 15h · Jantar 18h. Entre refeições: apenas água.</div>
+        <div class="g2">
+          <div class="form-group"><label class="form-label">Café da manhã — Horário</label><input type="time" class="form-input" id="r-cafe-h" value="07:00"></div>
+          <div class="form-group"><label class="form-label">O que costuma comer</label><input type="text" class="form-input" id="r-cafe-a" placeholder="Ex: Mingau de aveia com banana"></div>
+          <div class="form-group"><label class="form-label">Lanche da manhã — Horário</label><input type="time" class="form-input" id="r-l1-h" value="10:00"></div>
+          <div class="form-group"><label class="form-label">O que costuma comer</label><input type="text" class="form-input" id="r-l1-a" placeholder="Ex: Fruta em pedaços"></div>
+          <div class="form-group"><label class="form-label">Almoço — Horário</label><input type="time" class="form-input" id="r-alm-h" value="12:00"></div>
+          <div class="form-group"><label class="form-label">O que costuma comer</label><input type="text" class="form-input" id="r-alm-a" placeholder="Ex: Arroz + frango + legumes"></div>
+          <div class="form-group"><label class="form-label">Lanche da tarde — Horário</label><input type="time" class="form-input" id="r-l2-h" value="15:00"></div>
+          <div class="form-group"><label class="form-label">O que costuma comer</label><input type="text" class="form-input" id="r-l2-a" placeholder="Ex: Iogurte com fruta"></div>
+          <div class="form-group"><label class="form-label">Jantar — Horário</label><input type="time" class="form-input" id="r-jan-h" value="18:30"></div>
+          <div class="form-group"><label class="form-label">O que costuma comer</label><input type="text" class="form-input" id="r-jan-a" placeholder="Ex: Sopa ou papa"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="ico">📝</span> Observações Gerais</div>
+        <textarea class="form-textarea" id="p-obs" placeholder="Tipo de recusa, comportamentos, histórico alimentar..." rows="3"></textarea>
+      </div>
+      <button class="btn btn-primary" onclick="savePerfil()" style="width:100%;padding:13px;font-size:14px">💾 Salvar Perfil da Criança</button>
+    </div>
+  </div>
+
+  <!-- DIÁRIO -->
+  <div class="page" id="page-diario">
+    <div class="sec-header"><div><h2>Diário Alimentar</h2><p>Registre cada refeição e a reação da criança</p></div><button class="btn btn-primary" onclick="togDiary()">+ Nova Entrada</button></div>
+    <div id="diary-form" style="display:none">
+      <div class="card">
+        <div class="card-title"><span class="ico">📝</span> Registrar Refeição</div>
+        <div class="g2">
+          <div class="form-group"><label class="form-label">Data</label><input type="date" class="form-input" id="d-date"></div>
+          <div class="form-group"><label class="form-label">Refeição</label>
+            <select class="form-select" id="d-meal">
+              <option>Café da manhã</option><option>Lanche da manhã</option><option>Almoço</option><option>Lanche da tarde</option><option>Jantar</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Alimentos oferecidos</label><input type="text" class="form-input" id="d-foods" placeholder="Ex: Arroz, frango desfiado, cenoura cozida"></div>
+        <div class="form-group"><label class="form-label">Reação</label>
+          <div class="reaction-selector">
+            <button class="rbtn" onclick="selReact(this,'R')" data-r="R">🚫 Recusou</button>
+            <button class="rbtn" onclick="selReact(this,'T')" data-r="T">👋 Tocou</button>
+            <button class="rbtn" onclick="selReact(this,'C')" data-r="C">👃 Cheirou</button>
+            <button class="rbtn" onclick="selReact(this,'P')" data-r="P">👅 Provou</button>
+            <button class="rbtn" onclick="selReact(this,'A')" data-r="A">✅ Aceitou</button>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Observações</label><textarea class="form-textarea" id="d-obs" placeholder="Como foi a refeição?" rows="2"></textarea></div>
+        <div style="display:flex;gap:9px"><button class="btn btn-primary" onclick="saveDiary()">💾 Salvar</button><button class="btn btn-secondary" onclick="togDiary()">Cancelar</button></div>
+      </div>
+    </div>
+    <div id="diary-entries"></div>
+  </div>
+
+  <!-- CARDÁPIO -->
+  <div class="page" id="page-cardapio">
+    <div class="sec-header"><div><h2>Cardápio Semanal</h2><p>Bônus 1 — Ampliar o repertório gradualmente</p></div></div>
+    <div class="alert alert-info" style="margin-bottom:16px">ℹ️ Alimentos familiares servem como âncora para as novidades. Adapte as texturas para a fase do seu filho. <strong>Repita alimentos recusados nos próximos cardápios.</strong></div>
+    <div class="week-grid">
+      <div class="day-card"><div class="day-header">Segunda</div>
+        <div class="meal-slot"><div class="mt">Café</div><div class="mf">Mingau de aveia com banana</div></div>
+        <div class="meal-slot"><div class="mt">Lanche M</div><div class="mf">Mamão em pedaços</div></div>
+        <div class="meal-slot"><div class="mt">Almoço</div><div class="mf">Arroz + frango desfiado + cenoura + azeite</div></div>
+        <div class="meal-slot"><div class="mt">Lanche T</div><div class="mf">Iogurte natural com fruta amassada</div></div>
+        <div class="meal-slot"><div class="mt">Jantar</div><div class="mf">Omelete de abobrinha + purê de batata</div></div>
+      </div>
+      <div class="day-card"><div class="day-header">Terça</div>
+        <div class="meal-slot"><div class="mt">Café</div><div class="mf">Vitamina de mamão com aveia</div></div>
+        <div class="meal-slot"><div class="mt">Lanche M</div><div class="mf">Banana com pasta de amendoim</div></div>
+        <div class="meal-slot"><div class="mt">Almoço</div><div class="mf">Macarrão com molho + lentilha amassada</div></div>
+        <div class="meal-slot"><div class="mt">Lanche T</div><div class="mf">Maçã cozida com canela</div></div>
+        <div class="meal-slot"><div class="mt">Jantar</div><div class="mf">Frango + batata-doce + brócolis macio</div></div>
+      </div>
+      <div class="day-card"><div class="day-header">Quarta</div>
+        <div class="meal-slot"><div class="mt">Café</div><div class="mf">Panqueca de banana e ovo</div></div>
+        <div class="meal-slot"><div class="mt">Lanche M</div><div class="mf">Cubinhos de queijo minas</div></div>
+        <div class="meal-slot"><div class="mt">Almoço</div><div class="mf">Arroz + feijão amassado + abobrinha</div></div>
+        <div class="meal-slot"><div class="mt">Lanche T</div><div class="mf">Vitamina verde (banana + espinafre)</div></div>
+        <div class="meal-slot"><div class="mt">Jantar</div><div class="mf">Sopa de legumes com frango</div></div>
+      </div>
+      <div class="day-card"><div class="day-header">Quinta</div>
+        <div class="meal-slot"><div class="mt">Café</div><div class="mf">Mingau de aveia com maçã cozida</div></div>
+        <div class="meal-slot"><div class="mt">Lanche M</div><div class="mf">Pera macia em pedaços</div></div>
+        <div class="meal-slot"><div class="mt">Almoço</div><div class="mf">Frango + arroz + espinafre refogado</div></div>
+        <div class="meal-slot"><div class="mt">Lanche T</div><div class="mf">Ovo cozido em pedaços</div></div>
+        <div class="meal-slot"><div class="mt">Jantar</div><div class="mf">Omelete + purê de batata-doce</div></div>
+      </div>
+      <div class="day-card"><div class="day-header">Sexta</div>
+        <div class="meal-slot"><div class="mt">Café</div><div class="mf">Vitamina de banana com espinafre</div></div>
+        <div class="meal-slot"><div class="mt">Lanche M</div><div class="mf">Abacate amassado com limão</div></div>
+        <div class="meal-slot"><div class="mt">Almoço</div><div class="mf">Macarrão + frango + cenoura + ervilha</div></div>
+        <div class="meal-slot"><div class="mt">Lanche T</div><div class="mf">Iogurte com banana</div></div>
+        <div class="meal-slot"><div class="mt">Jantar</div><div class="mf">Arroz + feijão + beterraba cozida</div></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <div class="card-title"><span class="ico">📅</span> Fim de Semana</div>
+      <div class="alert alert-success" style="margin-bottom:0">✨ Reserve para <strong>refeições em família</strong> com alimentos compartilhados. Deixe seu filho ver e explorar os pratos de todos. Sem pressão — apenas presença e modelo.</div>
+    </div>
+  </div>
+
+  <!-- PROGRESSÃO -->
+  <div class="page" id="page-progressao">
+    <div class="sec-header"><div><h2>Tabela de Progressão Alimentar</h2><p>Bônus 3 — Acompanhe a evolução semana a semana</p></div><button class="btn btn-primary" onclick="togProgForm()">+ Adicionar Alimento</button></div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-title"><span class="ico">📊</span> Legenda</div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:5px"><span class="pb pb-R">R</span><span style="font-size:12px">Recusou</span></div>
+        <div style="display:flex;align-items:center;gap:5px"><span class="pb pb-T">T</span><span style="font-size:12px">Tocou</span></div>
+        <div style="display:flex;align-items:center;gap:5px"><span class="pb pb-C">C</span><span style="font-size:12px">Cheirou</span></div>
+        <div style="display:flex;align-items:center;gap:5px"><span class="pb pb-P">P</span><span style="font-size:12px">Provou</span></div>
+        <div style="display:flex;align-items:center;gap:5px"><span class="pb pb-A">A</span><span style="font-size:12px">Aceitou</span></div>
+      </div>
+    </div>
+    <div id="prog-form" style="display:none">
+      <div class="card">
+        <div class="card-title">Novo Alimento</div>
+        <div class="g2">
+          <div class="form-group"><label class="form-label">Alimento</label><input type="text" class="form-input" id="prog-al" placeholder="Ex: Brócolis"></div>
+          <div class="form-group"><label class="form-label">Meta</label><input type="text" class="form-input" id="prog-meta" placeholder="Ex: Aceitar cozido no vapor"></div>
+        </div>
+        <div style="display:flex;gap:9px"><button class="btn btn-primary" onclick="saveProgItem()">Adicionar</button><button class="btn btn-secondary" onclick="togProgForm()">Cancelar</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <table class="progress-table" id="prog-table" style="display:none">
+        <thead><tr><th>Alimento</th><th>Meta</th><th>1ª Exposição</th><th>Status</th><th>Atualizar</th><th></th></tr></thead>
+        <tbody id="prog-tbody"></tbody>
+      </table>
+      <div id="prog-empty" class="empty-state"><div class="eico">📊</div><h3>Nenhum alimento cadastrado</h3><p>Adicione alimentos para acompanhar a progressão</p></div>
+    </div>
+  </div>
+
+  <!-- TÉCNICAS -->
+  <div class="page" id="page-tecnicas">
+    <div class="sec-header"><div><h2>Técnicas de Aceitação</h2><p>Estratégias baseadas em neurociência da alimentação pediátrica</p></div></div>
+    <div class="alert alert-warning">💡 <strong>Dica:</strong> Não aplique mais de duas técnicas novas na mesma semana. Escolha uma, seja consistente por 10 dias e observe.</div>
+    <div class="g2">
+      <div class="card"><div class="card-title"><span class="ico">🍽️</span> Técnica 1 — Prato de Exploração</div><p style="font-size:13px;line-height:1.6;margin-bottom:10px">Uma vez por semana, monte um prato só para explorar — sem expectativa de comer. 5-6 alimentos pequenos, incluindo novidades.</p><div class="alert alert-success" style="margin-bottom:0">✅ Encoraje tocar, cheirar, lamber. A ausência de pressão reduz resistência dramaticamente.</div></div>
+      <div class="card"><div class="card-title"><span class="ico">📅</span> Técnica 2 — Exposição Escalonada</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;align-items:center;gap:7px;font-size:13px"><span style="background:var(--primary);color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;font-size:11px">1</span>Alimento no prato sem obrigação</div>
+          <div style="display:flex;align-items:center;gap:7px;font-size:13px"><span style="background:var(--primary);color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;font-size:11px">2</span>Peça que toque</div>
+          <div style="display:flex;align-items:center;gap:7px;font-size:13px"><span style="background:var(--primary);color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;font-size:11px">3</span>Peça que cheire</div>
+          <div style="display:flex;align-items:center;gap:7px;font-size:13px"><span style="background:var(--primary);color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;font-size:11px">4</span>Peça que lamba</div>
+          <div style="display:flex;align-items:center;gap:7px;font-size:13px"><span style="background:var(--primary);color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;font-size:11px">5</span>Morda e cuspa se quiser</div>
+        </div>
+      </div>
+      <div class="card"><div class="card-title"><span class="ico">🪞</span> Técnica 3 — O Espelho</div><p style="font-size:13px;line-height:1.6">Coma o mesmo alimento que está oferecendo, com expressão genuína de prazer. "Hmmm, que gostoso!"</p><div class="alert alert-info" style="margin-top:10px;margin-bottom:0">🧠 O cérebro do toddler processa isso como <strong>informação de segurança</strong>.</div></div>
+      <div class="card"><div class="card-title"><span class="ico">👨‍🍳</span> Técnica 4 — Culinária Compartilhada</div><p style="font-size:13px;line-height:1.6">Deixe seu filho participar do preparo, mesmo que só mexendo a colher.</p><div class="alert alert-success" style="margin-top:10px;margin-bottom:0">✨ Crianças que participam do preparo têm muito mais disposição para experimentar o resultado.</div></div>
+      <div class="card"><div class="card-title"><span class="ico">🌉</span> Técnica 5 — Ponte de Sabor</div><p style="font-size:13px;margin-bottom:10px">Use um sabor que a criança ama como "passagem" para o novo:</p>
+        <div style="display:flex;flex-direction:column;gap:5px;font-size:12px">
+          <div style="padding:5px 9px;background:var(--bg);border-radius:6px">🍌 Ama banana → misture com aveia</div>
+          <div style="padding:5px 9px;background:var(--bg);border-radius:6px">🍝 Ama macarrão → adicione abobrinha ralada ao molho</div>
+          <div style="padding:5px 9px;background:var(--bg);border-radius:6px">🍗 Ama frango → misture ao arroz com espinafre</div>
+          <div style="padding:5px 9px;background:var(--bg);border-radius:6px">🥚 Ama omelete → adicione abobrinha ou espinafre</div>
+        </div>
+      </div>
+      <div class="card"><div class="card-title"><span class="ico">👨‍👩‍👧</span> Técnica 6 — Contexto Social Positivo</div><p style="font-size:13px;line-height:1.6">Refeições com alegria, conversa leve e presença familiar criam um ambiente onde comer é prazeroso.</p><div class="alert alert-danger" style="margin-top:10px;margin-bottom:0">🚫 Evite celular à mesa e comentários negativos sobre a comida.</div></div>
+    </div>
+    <div class="card"><div class="card-title"><span class="ico">📏</span> A Regra das 15 Exposições</div><div class="alert alert-info" style="margin-bottom:12px">🧠 Um bebê pode precisar ser exposto a um alimento novo entre <strong>10 e 15 vezes</strong> antes de aceitá-lo. Isso não significa 15 tentativas de comer — significa 15 exposições: ver, cheirar, tocar, provar na ponta da língua.</div><p style="font-size:13px;color:var(--text);line-height:1.6">Quando seu filho recusa o brócolis pela quarta vez, ele não está dizendo <em>"odeio isso para sempre"</em>. Ele está dizendo <em>"ainda estou processando"</em>.</p></div>
+  </div>
+
+  <!-- FRASES -->
+  <div class="page" id="page-frases">
+    <div class="sec-header"><div><h2>Guia de Frases</h2><p>Bônus 2 — O que dizer (e evitar) na hora das refeições</p></div></div>
+    <div class="alert alert-warning" style="margin-bottom:18px">💬 As palavras que usamos em torno da comida <strong>criam crenças e associações duradouras</strong>. Pequenas mudanças de linguagem fazem enorme diferença.</div>
+    <div class="g2">
+      <div>
+        <h3 style="font-size:14px;font-weight:700;color:var(--primary);margin-bottom:10px">🚫 Elimine Estas Frases</h3>
+        <div class="checklist-item bad"><div class="checklist-ico">❌</div><div><div class="checklist-phrase">"Você não gosta disso."</div><div class="checklist-replace">→ Diga: "Você ainda está conhecendo esse sabor."</div></div></div>
+        <div class="checklist-item bad"><div class="checklist-ico">❌</div><div><div class="checklist-phrase">"Come logo que vai esfriar."</div><div class="checklist-replace">→ Deixe a refeição acontecer sem pressa.</div></div></div>
+        <div class="checklist-item bad"><div class="checklist-ico">❌</div><div><div class="checklist-phrase">"Se comer tudo, ganha sobremesa."</div><div class="checklist-replace">→ Ofereça a sobremesa sem condição.</div></div></div>
+        <div class="checklist-item bad"><div class="checklist-ico">❌</div><div><div class="checklist-phrase">"Só mais uma colherada."</div><div class="checklist-replace">→ Confie no sinal de saciedade da criança.</div></div></div>
+        <div class="checklist-item bad"><div class="checklist-ico">❌</div><div><div class="checklist-phrase">"Isso é nojento?"</div><div class="checklist-replace">→ Diga: "É diferente. Quer cheirar primeiro?"</div></div></div>
+        <div class="checklist-item bad"><div class="checklist-ico">❌</div><div><div class="checklist-phrase">"Você vai ficar doente se não comer."</div><div class="checklist-replace">→ Evite medo e culpa em torno da comida.</div></div></div>
+        <div class="checklist-item bad"><div class="checklist-ico">❌</div><div><div class="checklist-phrase">"Olha o aviãozinho!"</div><div class="checklist-replace">→ A criança precisa estar presente e consciente do que come.</div></div></div>
+        <div class="checklist-item bad"><div class="checklist-ico">❌</div><div><div class="checklist-phrase">"Você é muito chato para comer."</div><div class="checklist-replace">→ Evite rótulos que viram identidade.</div></div></div>
+        <div class="checklist-item bad"><div class="checklist-ico">❌</div><div><div class="checklist-phrase">"Prova só um pouquinho, por favor."</div><div class="checklist-replace">→ O "por favor" angustiado transmite sua ansiedade.</div></div></div>
+        <div class="checklist-item bad"><div class="checklist-ico">❌</div><div><div class="checklist-phrase">"As crianças passam fome e você desperdiça."</div><div class="checklist-replace">→ Gera culpa, não apetite.</div></div></div>
+      </div>
+      <div>
+        <h3 style="font-size:14px;font-weight:700;color:var(--success);margin-bottom:10px">✅ Use Estas Frases</h3>
+        <div class="checklist-item good"><div class="checklist-ico">✅</div><div><div class="checklist-phrase">"Hoje tem cenoura. Quer tocar antes de provar?"</div></div></div>
+        <div class="checklist-item good"><div class="checklist-ico">✅</div><div><div class="checklist-phrase">"Você experimentou! Que aventura!"</div></div></div>
+        <div class="checklist-item good"><div class="checklist-ico">✅</div><div><div class="checklist-phrase">"Não precisa comer se não quiser. Fica no prato pra você olhar."</div></div></div>
+        <div class="checklist-item good"><div class="checklist-ico">✅</div><div><div class="checklist-phrase">"Hmm, que gostoso este brócolis." (com prazer genuíno)</div></div></div>
+        <div class="checklist-item good"><div class="checklist-ico">✅</div><div><div class="checklist-phrase">"Você escolhe: tigela verde ou azul?"</div></div></div>
+        <div class="checklist-item good"><div class="checklist-ico">✅</div><div><div class="checklist-phrase">"Esse aqui tem um gosto diferente mesmo. É normal."</div></div></div>
+        <div class="checklist-item good"><div class="checklist-ico">✅</div><div><div class="checklist-phrase">"Cenoura ou abobrinha hoje?" (escolhas limitadas)</div></div></div>
+        <div class="checklist-item good"><div class="checklist-ico">✅</div><div><div class="checklist-phrase">"Você ainda está conhecendo esse sabor."</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECEITAS -->
+  <div class="page" id="page-receitas">
+    <div class="sec-header"><div><h2>Receitas de Aceitação</h2><p>Simples, sem sal e sem açúcar para crianças seletivas</p></div></div>
+    <div class="g2">
+      <div class="card"><div class="card-title"><span class="ico">🍠</span> Purê de Batata-doce com Frango</div><span style="font-size:11px;background:#fff0f0;color:var(--primary);padding:2px 9px;border-radius:20px;display:inline-block;margin-bottom:10px">6 a 12 meses</span>
+        <div style="margin-bottom:10px"><div style="font-size:11px;font-weight:700;color:var(--text-light);margin-bottom:5px;text-transform:uppercase">Ingredientes</div><ul style="font-size:13px;padding-left:16px;line-height:2"><li>2 batatas-doces médias cozidas</li><li>100g frango cozido desfiado fino</li><li>2 col. sopa de azeite</li><li>Água do cozimento</li></ul></div>
+        <div><div style="font-size:11px;font-weight:700;color:var(--text-light);margin-bottom:5px;text-transform:uppercase">Modo de preparo</div><p style="font-size:13px;line-height:1.6">Amasse a batata-doce com garfo ou mixer, misture frango e azeite. Ajuste a consistência com água do cozimento. Sirva morno.</p></div>
+      </div>
+      <div class="card"><div class="card-title"><span class="ico">🥚</span> Omelete de Abobrinha</div><span style="font-size:11px;background:#fff0f0;color:var(--primary);padding:2px 9px;border-radius:20px;display:inline-block;margin-bottom:10px">10 meses em diante</span>
+        <div style="margin-bottom:10px"><div style="font-size:11px;font-weight:700;color:var(--text-light);margin-bottom:5px;text-transform:uppercase">Ingredientes</div><ul style="font-size:13px;padding-left:16px;line-height:2"><li>2 ovos</li><li>1/4 abobrinha ralada fina</li><li>1 col. sopa de azeite</li></ul></div>
+        <div><div style="font-size:11px;font-weight:700;color:var(--text-light);margin-bottom:5px;text-transform:uppercase">Modo de preparo</div><p style="font-size:13px;line-height:1.6">Misture ovos com a abobrinha ralada. Aqueça azeite em frigideira antiaderente em fogo baixo. Cozinhe até firmar. Corte em tiras para BLW.</p></div>
+      </div>
+      <div class="card"><div class="card-title"><span class="ico">🥤</span> Vitamina Verde para Toddlers</div><span style="font-size:11px;background:#e8f5e9;color:var(--success);padding:2px 9px;border-radius:20px;display:inline-block;margin-bottom:10px">Qualquer fase</span>
+        <div style="margin-bottom:10px"><div style="font-size:11px;font-weight:700;color:var(--text-light);margin-bottom:5px;text-transform:uppercase">Ingredientes</div><ul style="font-size:13px;padding-left:16px;line-height:2"><li>1 banana madura congelada</li><li>1/2 xíc. leite ou bebida vegetal</li><li>1 folhinha de espinafre</li><li>1 col. sopa de aveia</li></ul></div>
+        <div><div style="font-size:11px;font-weight:700;color:var(--text-light);margin-bottom:5px;text-transform:uppercase">Modo de preparo</div><p style="font-size:13px;line-height:1.6">Bata tudo no liquidificador. Sirva gelado. Cor verde-clara, sabor de banana. <strong>Aumente gradualmente o espinafre ao longo das semanas.</strong></p></div>
+      </div>
+      <div class="card"><div class="card-title"><span class="ico">🥞</span> Panqueca de Banana e Aveia</div><span style="font-size:11px;background:#fff0f0;color:var(--primary);padding:2px 9px;border-radius:20px;display:inline-block;margin-bottom:10px">12 meses em diante</span>
+        <div style="margin-bottom:10px"><div style="font-size:11px;font-weight:700;color:var(--text-light);margin-bottom:5px;text-transform:uppercase">Ingredientes</div><ul style="font-size:13px;padding-left:16px;line-height:2"><li>1 banana madura amassada</li><li>1 ovo</li><li>3 col. sopa de aveia</li></ul></div>
+        <div><div style="font-size:11px;font-weight:700;color:var(--text-light);margin-bottom:5px;text-transform:uppercase">Modo de preparo</div><p style="font-size:13px;line-height:1.6">Misture tudo, frite em frigideira antiaderente com azeite, fogo baixo. Corte em pedaços para comer com as mãos.</p><div class="alert alert-info" style="margin-top:9px;margin-bottom:0">❄️ Congele em porções individuais para os dias corridos.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ALERTAS -->
+  <div class="page" id="page-alertas">
+    <div class="sec-header"><div><h2>Sinais de Alerta</h2><p>Quando buscar ajuda profissional</p></div></div>
+    <div class="alert alert-warning" style="margin-bottom:16px">⚠️ A maioria das dificuldades resolve com tempo e consistência. Mas existem situações em que o suporte profissional <strong>não deve ser adiado</strong>.</div>
+    <div class="g2">
+      <div class="card"><div class="card-title"><span class="ico">🚨</span> Sinais que Pedem Avaliação Médica</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div class="alert alert-danger" style="margin-bottom:0">🔴 Perda de peso ou falha em ganhar peso adequado para a idade</div>
+          <div class="alert alert-danger" style="margin-bottom:0">🔴 Engasgamento frequente ou dificuldade de deglutição</div>
+          <div class="alert alert-danger" style="margin-bottom:0">🔴 Vômitos recorrentes associados às refeições</div>
+          <div class="alert alert-danger" style="margin-bottom:0">🔴 Choro intenso e consistente durante ou após as refeições</div>
+          <div class="alert alert-danger" style="margin-bottom:0">🔴 Recusa de todos os alimentos de determinada categoria</div>
+          <div class="alert alert-danger" style="margin-bottom:0">🔴 Repertório restrito a menos de 15 alimentos após os 2 anos</div>
+        </div>
+      </div>
+      <div class="card"><div class="card-title"><span class="ico">👩‍⚕️</span> Profissionais que Podem Ajudar</div>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <div style="padding:10px;background:var(--bg);border-radius:8px"><div style="font-weight:700;font-size:13px">🩺 Pediatra</div><div style="font-size:12px;color:var(--text-light);margin-top:2px">Primeira linha — descarta causas orgânicas</div></div>
+          <div style="padding:10px;background:var(--bg);border-radius:8px"><div style="font-weight:700;font-size:13px">🥗 Nutricionista Pediátrico</div><div style="font-size:12px;color:var(--text-light);margin-top:2px">Orientação sobre progressão e planejamento alimentar</div></div>
+          <div style="padding:10px;background:var(--bg);border-radius:8px"><div style="font-weight:700;font-size:13px">💬 Fonoaudiólogo Pediátrico</div><div style="font-size:12px;color:var(--text-light);margin-top:2px">Avalia função oral, deglutição e mastigação</div></div>
+          <div style="padding:10px;background:var(--bg);border-radius:8px"><div style="font-weight:700;font-size:13px">🧩 Terapeuta Ocupacional</div><div style="font-size:12px;color:var(--text-light);margin-top:2px">Integração sensorial e dessensibilização oral</div></div>
+          <div style="padding:10px;background:var(--bg);border-radius:8px"><div style="font-weight:700;font-size:13px">🧠 Psicólogo Infantil</div><div style="font-size:12px;color:var(--text-light);margin-top:2px">Quando a recusa tem componente emocional intenso</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card"><div class="card-title"><span class="ico">🧠</span> Sinais de Hipersensibilidade Sensorial</div>
+      <div class="g2">
+        <div><ul style="font-size:13px;padding-left:18px;line-height:2.2"><li>Vomita ou faz careta intensa com texturas específicas</li><li>Recusa alimentos por cheiro antes de provar</li><li>Aceita menos de 20 alimentos</li><li>Reage com choro intenso a alimentos novos no prato</li><li>Dificuldade com transições de textura após 18 meses</li><li>Comportamentos de mastigação atípicos</li></ul></div>
+        <div>
+          <p style="font-size:13px;margin-bottom:10px">O que fazer em casa (de forma lúdica):</p>
+          <div style="display:flex;flex-direction:column;gap:7px">
+            <div style="padding:9px;background:#f0fff4;border-radius:8px;font-size:12px">🎨 Brincadeiras com massinha, areia cinética, geleca</div>
+            <div style="padding:9px;background:#f0fff4;border-radius:8px;font-size:12px">🖌️ Pintura com os dedos — reduz hipersensibilidade tátil</div>
+            <div style="padding:9px;background:#f0fff4;border-radius:8px;font-size:12px">🍎 Exploração de alimentos fora da refeição — só tocar</div>
+            <div style="padding:9px;background:#f0fff4;border-radius:8px;font-size:12px">🦷 Escovação oral leve — com orientação profissional</div>
+          </div>
+          <div class="alert alert-warning" style="margin-top:10px;margin-bottom:0">⚠️ Hipersensibilidade intensa pode ser sinal de transtorno do processamento sensorial ou espectro autista. Avaliação precoce faz toda a diferença.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const PT={dashboard:['Dashboard','Visão geral do acompanhamento'],perfil:['Perfil da Criança','Informações do bebê'],diario:['Diário Alimentar','Registros de refeições'],cardapio:['Cardápio Semanal','Sugestões de refeições'],progressao:['Tabela de Progressão','Acompanhe cada alimento'],tecnicas:['Técnicas de Aceitação','Baseadas em neurociência'],frases:['Guia de Frases','O que dizer na hora das refeições'],receitas:['Receitas','Para começar hoje'],alertas:['Sinais de Alerta','Quando buscar ajuda profissional']};
+
+let S={perfil:null,tags:{alergias:[],aceitos:[],recusados:[],texturas:[]},diario:[],progressao:[],react:null};
+let TX=[];
+
+function load(){try{const d=localStorage.getItem('mfc');if(d){const p=JSON.parse(d);S={...S,...p};if(!S.tags)S.tags={alergias:[],aceitos:[],recusados:[],texturas:[]};if(!S.diario)S.diario=[];if(!S.progressao)S.progressao=[];}}catch(e){}}
+
+function save(){localStorage.setItem('mfc',JSON.stringify(S));}
+
+function go(pg){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+pg).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>{if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+pg+"'"))n.classList.add('active');});
+  const t=PT[pg]||[pg,''];
+  document.getElementById('hTitle').textContent=t[0];
+  document.getElementById('hSub').textContent=t[1];
+  if(pg==='dashboard')updDash();
+  if(pg==='diario')renderDiary();
+  if(pg==='progressao')renderProg();
+  if(pg==='perfil')renderPerfil();
+}
+
+// Tags
+function addTag(e,type){
+  if(e.key==='Enter'||e.key===','){
+    e.preventDefault();
+    const v=e.target.value.trim().replace(',','');
+    if(v){S.tags[type].push(v);renderTags(type);e.target.value=''}
+  }
+}
+function renderTags(type){
+  const c=document.getElementById('tc-'+type);if(!c)return;
+  const inp=c.querySelector('.tags-input');c.innerHTML='';
+  (S.tags[type]||[]).forEach((t,i)=>{
+    const el=document.createElement('span');
+    el.className='tag'+(type==='aceitos'?' green':type==='texturas'?' yellow':'');
+    el.innerHTML=`${t} <span class="tag-x" onclick="rmTag('${type}',${i})">×</span>`;
+    c.appendChild(el);
+  });
+  if(inp)c.appendChild(inp);
+}
+function rmTag(type,i){S.tags[type].splice(i,1);renderTags(type);}
+
+function updTex(cb){
+  if(cb.checked){if(!TX.includes(cb.value))TX.push(cb.value);}
+  else TX=TX.filter(t=>t!==cb.value);
+  renderTX();
+}
+function addTexCustom(){
+  const inp=document.getElementById('tex-custom');
+  if(inp.value.trim()){TX.push(inp.value.trim());renderTX();inp.value='';}
+}
+function renderTX(){
+  const c=document.getElementById('tc-texturas');c.innerHTML='';
+  TX.forEach((t,i)=>{
+    const el=document.createElement('span');el.className='tag yellow';
+    el.innerHTML=`${t} <span class="tag-x" onclick="TX.splice(${i},1);renderTX()">×</span>`;
+    c.appendChild(el);
+  });
+}
+
+// Perfil
+function savePerfil(){
+  const nome=document.getElementById('p-nome').value.trim();
+  if(!nome){toast('Informe o nome da criança.',false);return;}
+  S.perfil={
+    nome,idade:document.getElementById('p-idade').value,
+    peso:document.getElementById('p-peso').value,
+    fase:document.getElementById('p-fase').value,
+    alergias:[...S.tags.alergias],aceitos:[...S.tags.aceitos],
+    recusados:[...S.tags.recusados],texturas:[...TX],
+    rotina:{
+      cafe:{h:document.getElementById('r-cafe-h').value,a:document.getElementById('r-cafe-a').value},
+      l1:{h:document.getElementById('r-l1-h').value,a:document.getElementById('r-l1-a').value},
+      alm:{h:document.getElementById('r-alm-h').value,a:document.getElementById('r-alm-a').value},
+      l2:{h:document.getElementById('r-l2-h').value,a:document.getElementById('r-l2-a').value},
+      jan:{h:document.getElementById('r-jan-h').value,a:document.getElementById('r-jan-a').value}
+    },
+    obs:document.getElementById('p-obs').value
+  };
+  save();toast('Perfil salvo!',true);renderPerfil();
+}
+
+function renderPerfil(){
+  if(!S.perfil){document.getElementById('perfil-display').style.display='none';document.getElementById('perfil-form').style.display='block';return;}
+  const p=S.perfil;
+  document.getElementById('perfil-display').style.display='block';
+  document.getElementById('perfil-form').style.display='none';
+  document.getElementById('dn').textContent=p.nome;
+  document.getElementById('di').textContent=(p.idade||'')+(p.peso?' · '+p.peso+' kg':'');
+  document.getElementById('df').textContent=p.fase||'Fase não informada';
+  document.getElementById('dp').textContent=p.peso?p.peso+' kg':'';
+  const tagList=(id,items,cls)=>{
+    const el=document.getElementById(id);
+    el.innerHTML=items.length>0?items.map(t=>`<span class="tag ${cls}">${t}</span>`).join(''):'<span style="color:var(--text-light);font-size:12px">Nenhum informado</span>';
+  };
+  tagList('dac',p.aceitos||[],'green');tagList('drec',p.recusados||[],'');
+  tagList('dal',p.alergias||[],'');tagList('dtex',p.texturas||[],'yellow');
+  const r=p.rotina||{};
+  const meals=[['Café da manhã',r.cafe],['Lanche da manhã',r.l1],['Almoço',r.alm],['Lanche da tarde',r.l2],['Jantar',r.jan]];
+  document.getElementById('drot').innerHTML=meals.map(([n,m])=>`<div class="rotina-item"><div class="rtime">${m?.h||'--:--'}</div><div class="rmeal">${n}</div><div class="rdet">${m?.a||'Não informado'}</div></div>`).join('');
+  document.getElementById('dobs').textContent=p.obs||'Sem observações.';
+}
+
+function editPerfil(){
+  if(!S.perfil)return;const p=S.perfil;
+  document.getElementById('perfil-display').style.display='none';
+  document.getElementById('perfil-form').style.display='block';
+  document.getElementById('p-nome').value=p.nome;
+  document.getElementById('p-idade').value=p.idade||'';
+  document.getElementById('p-peso').value=p.peso||'';
+  document.getElementById('p-fase').value=p.fase||'';
+  S.tags.alergias=[...(p.alergias||[])];
+  S.tags.aceitos=[...(p.aceitos||[])];
+  S.tags.recusados=[...(p.recusados||[])];
+  TX=[...(p.texturas||[])];
+  ['alergias','aceitos','recusados'].forEach(t=>renderTags(t));renderTX();
+  const r=p.rotina||{};
+  document.getElementById('r-cafe-h').value=r.cafe?.h||'07:00';document.getElementById('r-cafe-a').value=r.cafe?.a||'';
+  document.getElementById('r-l1-h').value=r.l1?.h||'10:00';document.getElementById('r-l1-a').value=r.l1?.a||'';
+  document.getElementById('r-alm-h').value=r.alm?.h||'12:00';document.getElementById('r-alm-a').value=r.alm?.a||'';
+  document.getElementById('r-l2-h').value=r.l2?.h||'15:00';document.getElementById('r-l2-a').value=r.l2?.a||'';
+  document.getElementById('r-jan-h').value=r.jan?.h||'18:30';document.getElementById('r-jan-a').value=r.jan?.a||'';
+  document.getElementById('p-obs').value=p.obs||'';
+}
+
+// Diário
+function togDiary(){
+  const f=document.getElementById('diary-form');
+  f.style.display=f.style.display==='none'?'block':'none';
+  if(f.style.display==='block'){
+    document.getElementById('d-date').value=new Date().toISOString().split('T')[0];
+    S.react=null;document.querySelectorAll('.rbtn').forEach(b=>b.className='rbtn');
+  }
+}
+function selReact(btn,r){
+  document.querySelectorAll('.rbtn').forEach(b=>b.className='rbtn');
+  S.react=r;btn.className='rbtn sel-'+r;
+}
+function saveDiary(){
+  const foods=document.getElementById('d-foods').value.trim();
+  if(!foods){toast('Informe os alimentos.',false);return;}
+  S.diario.unshift({id:Date.now(),date:document.getElementById('d-date').value,meal:document.getElementById('d-meal').value,foods,reaction:S.react||'R',obs:document.getElementById('d-obs').value});
+  save();document.getElementById('d-foods').value='';document.getElementById('d-obs').value='';
+  S.react=null;document.querySelectorAll('.rbtn').forEach(b=>b.className='rbtn');
+  togDiary();renderDiary();toast('Refeição registrada!',true);
+}
+const RL={R:'🚫 Recusou',T:'👋 Tocou',C:'👃 Cheirou',P:'👅 Provou',A:'✅ Aceitou'};
+function renderDiary(){
+  const c=document.getElementById('diary-entries');
+  if(!S.diario.length){c.innerHTML='<div class="empty-state"><div class="eico">📖</div><h3>Nenhuma entrada ainda</h3><p>Registre a primeira refeição</p></div>';return;}
+  c.innerHTML=S.diario.map(e=>`<div class="diary-entry"><div class="eh"><div><div class="emeal">${e.meal}</div><div class="edate">${fd(e.date)}</div></div><div style="display:flex;align-items:center;gap:7px"><span class="pb pb-${e.reaction}">${RL[e.reaction]||e.reaction}</span><button onclick="delDiary(${e.id})" style="background:none;border:none;cursor:pointer;color:var(--text-light)">🗑️</button></div></div><div style="font-size:13px"><strong>Alimentos:</strong> ${e.foods}</div>${e.obs?`<div style="font-size:12px;color:var(--text-light);margin-top:5px">${e.obs}</div>`:''}</div>`).join('');
+}
+function delDiary(id){S.diario=S.diario.filter(e=>e.id!==id);save();renderDiary();toast('Removido.',true);}
+
+// Progressão
+function togProgForm(){const f=document.getElementById('prog-form');f.style.display=f.style.display==='none'?'block':'none';}
+function saveProgItem(){
+  const al=document.getElementById('prog-al').value.trim();
+  if(!al){toast('Informe o alimento.',false);return;}
+  S.progressao.push({id:Date.now(),alimento:al,meta:document.getElementById('prog-meta').value,dataInicio:new Date().toISOString().split('T')[0],status:'R'});
+  save();document.getElementById('prog-al').value='';document.getElementById('prog-meta').value='';
+  togProgForm();renderProg();toast('Adicionado!',true);
+}
+function updProg(id,status){const item=S.progressao.find(p=>p.id===id);if(item){item.status=status;save();renderProg();}}
+function delProg(id){S.progressao=S.progressao.filter(p=>p.id!==id);save();renderProg();}
+const SL={R:'Recusou',T:'Tocou',C:'Cheirou',P:'Provou',A:'Aceitou'};
+function renderProg(){
+  const tb=document.getElementById('prog-tbody'),em=document.getElementById('prog-empty'),tbl=document.getElementById('prog-table');
+  if(!S.progressao.length){tb.innerHTML='';em.style.display='block';tbl.style.display='none';return;}
+  tbl.style.display='table';em.style.display='none';
+  tb.innerHTML=S.progressao.map(item=>`<tr><td><strong>${item.alimento}</strong></td><td style="font-size:12px;color:var(--text-light)">${item.meta||'—'}</td><td style="font-size:12px">${fd(item.dataInicio)}</td><td><span class="pb pb-${item.status}">${SL[item.status]}</span></td><td><select onchange="updProg(${item.id},this.value)" style="padding:3px 7px;border-radius:6px;border:1px solid var(--border);font-size:12px;cursor:pointer">${['R','T','C','P','A'].map(s=>`<option value="${s}"${s===item.status?' selected':''}>${SL[s]}</option>`).join('')}</select></td><td><button onclick="delProg(${item.id})" style="background:none;border:none;cursor:pointer;color:var(--text-light)">🗑️</button></td></tr>`).join('');
+}
+
+// Dashboard
+function updDash(){
+  document.getElementById('st-ac').textContent=(S.perfil?.aceitos||[]).length;
+  document.getElementById('st-rec').textContent=(S.perfil?.recusados||[]).length;
+  document.getElementById('st-dia').textContent=S.diario.length;
+  document.getElementById('st-prog').textContent=S.progressao.length;
+  const pe=document.getElementById('db-perfil');
+  if(S.perfil){
+    pe.innerHTML=`<div style="display:flex;gap:10px;align-items:center;margin-bottom:14px"><div style="font-size:36px">👶</div><div><div style="font-size:17px;font-weight:800;color:var(--primary)">${S.perfil.nome}</div><div style="font-size:12px;color:var(--text-light)">${S.perfil.idade||''}${S.perfil.peso?' · '+S.perfil.peso+'kg':''}</div></div></div><div class="info-grid"><div class="info-item"><div class="il">Aceitos</div><div class="iv" style="color:var(--success)">${(S.perfil.aceitos||[]).length} alimentos</div></div><div class="info-item"><div class="il">Recusados</div><div class="iv" style="color:var(--primary)">${(S.perfil.recusados||[]).length} alimentos</div></div><div class="info-item"><div class="il">Alergias</div><div class="iv">${(S.perfil.alergias||[]).length>0?S.perfil.alergias.join(', '):'Nenhuma'}</div></div><div class="info-item"><div class="il">Fase</div><div class="iv" style="font-size:11px">${S.perfil.fase||'Não informado'}</div></div></div>`;
+  }
+  const re=document.getElementById('db-rotina');
+  if(S.perfil?.rotina){
+    const r=S.perfil.rotina;
+    const ms=[['☕ Café',r.cafe],['🍌 Lanche M',r.l1],['🍽️ Almoço',r.alm],['🥤 Lanche T',r.l2],['🌙 Jantar',r.jan]];
+    re.innerHTML='<div class="rotina-timeline">'+ms.map(([n,m])=>`<div class="rotina-item"><div class="rtime">${m?.h||'--:--'}</div><div class="rmeal">${n}</div><div class="rdet">${m?.a||'—'}</div></div>`).join('')+'</div>';
+  }
+  const de=document.getElementById('db-diary');
+  if(S.diario.length){
+    de.innerHTML=S.diario.slice(0,3).map(e=>`<div style="display:flex;justify-content:space-between;padding:9px;border-radius:8px;background:var(--bg);margin-bottom:7px"><div><div style="font-size:13px;font-weight:600">${e.meal}</div><div style="font-size:11px;color:var(--text-light)">${e.foods} · ${fd(e.date)}</div></div><span class="pb pb-${e.reaction}" style="align-self:center">${RL[e.reaction]}</span></div>`).join('')+'<a href="#" onclick="go(\'diario\')" style="font-size:12px;color:var(--primary);text-decoration:none">Ver todos →</a>';
+  }
+}
+
+function fd(s){if(!s)return'';const[y,m,d]=s.split('-');return`${d}/${m}/${y}`;}
+
+function toast(msg,ok){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast show'+(ok?' ok':'');
+  setTimeout(()=>t.className='toast',3000);
+}
+
+// Init
+load();
+if(!S.progressao.length){
+  S.progressao=[
+    {id:1,alimento:'Brócolis',meta:'Aceitar cozido no vapor',dataInicio:new Date().toISOString().split('T')[0],status:'R'},
+    {id:2,alimento:'Espinafre',meta:'Aceitar em vitamina e refogado',dataInicio:new Date().toISOString().split('T')[0],status:'R'},
+    {id:3,alimento:'Beterraba',meta:'Aceitar cozida ou assada',dataInicio:new Date().toISOString().split('T')[0],status:'R'},
+    {id:4,alimento:'Lentilha',meta:'Aceitar amassada no arroz',dataInicio:new Date().toISOString().split('T')[0],status:'R'},
+    {id:5,alimento:'Abobrinha',meta:'Aceitar refogada ou na omelete',dataInicio:new Date().toISOString().split('T')[0],status:'R'},
+  ];
+  save();
+}
+document.getElementById('d-date').value=new Date().toISOString().split('T')[0];
+updDash();
+renderPerfil();
+</script>
+</body>
+</html>
