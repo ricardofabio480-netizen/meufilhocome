@@ -87,20 +87,17 @@ nav{background:#fff;border-bottom:1px solid #eee;padding:0 5%;position:sticky;to
 .feat-card h3{font-size:15px;font-weight:700;margin-bottom:8px;color:var(--dark)}
 .feat-card p{font-size:13px;color:var(--light);line-height:1.5}
 .pricing{padding:80px 5%;background:var(--gray);text-align:center}
-.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:48px;max-width:900px;margin-left:auto;margin-right:auto}
-.price-card{background:#fff;border-radius:20px;padding:32px 28px;border:2px solid #eee;transition:all .3s;position:relative}
-.price-card.popular{border-color:var(--red);transform:scale(1.04)}
-.popular-badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--red);color:#fff;padding:4px 18px;border-radius:50px;font-size:12px;font-weight:700;white-space:nowrap}
-.price-plan{font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--light);font-weight:700;margin-bottom:12px}
-.price-val{font-size:42px;font-weight:800;color:var(--dark)}
-.price-val span{font-size:16px;font-weight:400;color:var(--light)}
-.price-val sup{font-size:20px;vertical-align:top;margin-top:8px}
-.price-period{font-size:13px;color:var(--light);margin-top:4px;margin-bottom:24px}
-.price-features{list-style:none;margin-bottom:28px;text-align:left}
-.price-features li{padding:8px 0;font-size:13px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:8px}
-.price-features li:last-child{border-bottom:none}
-.price-features .check{color:var(--green);font-weight:700}
-.price-features .x{color:#ccc}
+.price-single{background:#fff;border-radius:24px;padding:48px 40px;border:2px solid rgba(230,57,70,.18);max-width:520px;margin:48px auto 0;position:relative;box-shadow:0 24px 70px rgba(232,105,141,.15)}
+.price-single::before{content:'🔒 Acesso Vitalício';position:absolute;top:-18px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--red),var(--pink));color:#fff;padding:6px 24px;border-radius:50px;font-size:13px;font-weight:700;white-space:nowrap}
+.price-val{font-size:22px;font-weight:700;color:var(--light);margin-bottom:4px}
+.price-val strong{font-size:72px;font-weight:800;color:var(--dark);line-height:1}
+.price-val sup{font-size:28px;vertical-align:super;font-weight:800;color:var(--red)}
+.price-once{font-size:14px;color:var(--light);margin-bottom:32px}
+.price-once span{color:var(--red);font-weight:700}
+.price-features{list-style:none;margin-bottom:32px;text-align:left;display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.price-features li{padding:9px 8px;font-size:13px;display:flex;align-items:center;gap:8px}
+.price-features .check{color:var(--green);font-weight:700;font-size:15px}
+.price-divider{height:1px;background:linear-gradient(90deg,transparent,rgba(232,105,141,.25),transparent);margin:0 0 28px}
 .testimonials{padding:80px 5%;background:#fff}
 .test-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:48px}
 .test-card{background:var(--gray);border-radius:16px;padding:24px}
@@ -137,7 +134,7 @@ footer .footer-links a:hover{color:#fff}
 .vsl-headline{font-size:26px;font-weight:800;color:var(--dark);margin-bottom:32px;max-width:680px;margin-left:auto;margin-right:auto;line-height:1.35}
 .vsl-headline span{color:var(--red)}
 .vsl-wrapper{position:relative;max-width:800px;margin:0 auto;border-radius:14px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.6);background:#000;aspect-ratio:16/9}
-.vsl-wrapper video{width:100%;height:100%;display:block;object-fit:cover}
+#ytPlayer,#ytPlayer iframe{position:absolute;inset:0;width:100%;height:100%;border:none}
 .vsl-overlay{position:absolute;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .3s}
 .vsl-overlay:hover{background:rgba(0,0,0,.3)}
 .vsl-play-btn{width:84px;height:84px;border-radius:50%;background:var(--red);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(230,57,70,.65);transition:transform .2s,box-shadow .2s}
@@ -207,9 +204,7 @@ nav.nav-scrolled{box-shadow:0 6px 28px rgba(232,105,141,.18)}
 <section class="vsl-section">
   <p class="vsl-headline">Assista ao vídeo e descubra como <span>transformar a hora da refeição</span> do seu filho em algo leve e sem estresse</p>
   <div class="vsl-wrapper">
-    <video id="vslVideo" playsinline disablePictureInPicture controlsList="nodownload nofullscreen noremoteplayback">
-      <source src="seu-video.mp4" type="video/mp4">
-    </video>
+    <div id="ytPlayer"></div>
     <div class="vsl-overlay" id="vslOverlay" onclick="playVSL()">
       <div class="vsl-pulse-wrap">
         <div class="vsl-ring"></div>
@@ -337,53 +332,27 @@ nav.nav-scrolled{box-shadow:0 6px 28px rgba(232,105,141,.18)}
 
 <div class="wave" style="background:#fff5f7"><svg viewBox="0 0 1440 56" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"><path fill="#fff8f2" d="M0,14 C360,56 1080,0 1440,42 L1440,56 L0,56Z"/></svg></div>
 <section class="pricing" id="precos">
-  <div class="section-label">Planos</div>
-  <div class="section-title">Invista no bem-estar do seu filho</div>
-  <p style="color:var(--light);margin-top:12px">Cancele quando quiser. Sem contratos.</p>
-  <div class="pricing-grid">
-    <div class="price-card">
-      <div class="price-plan">Básico</div>
-      <div class="price-val"><sup>R$</sup>19<span>,90/mês</span></div>
-      <div class="price-period">ou R$ 197/ano</div>
-      <ul class="price-features">
-        <li><span class="check">✓</span> 1 perfil de criança</li>
-        <li><span class="check">✓</span> Diário alimentar</li>
-        <li><span class="check">✓</span> Tabela de progressão</li>
-        <li><span class="check">✓</span> Cardápio semanal</li>
-        <li><span class="x">✗</span> Técnicas avançadas</li>
-        <li><span class="x">✗</span> Suporte prioritário</li>
-      </ul>
-      <a href="app_com_login.html" class="btn btn-outline" style="width:100%;justify-content:center;background:transparent;color:var(--red);border-color:var(--red)">Começar Agora</a>
-    </div>
-    <div class="price-card popular">
-      <div class="popular-badge">⭐ Mais Popular</div>
-      <div class="price-plan">Premium</div>
-      <div class="price-val"><sup>R$</sup>39<span>,90/mês</span></div>
-      <div class="price-period">ou R$ 397/ano — economize 17%</div>
-      <ul class="price-features">
-        <li><span class="check">✓</span> Múltiplos filhos</li>
-        <li><span class="check">✓</span> Diário alimentar completo</li>
-        <li><span class="check">✓</span> Tabela de progressão</li>
-        <li><span class="check">✓</span> Cardápio semanal</li>
-        <li><span class="check">✓</span> Todas as técnicas</li>
-        <li><span class="check">✓</span> Suporte prioritário</li>
-      </ul>
-      <a href="app_com_login.html" class="btn btn-red" style="width:100%;justify-content:center">Começar Agora →</a>
-    </div>
-    <div class="price-card">
-      <div class="price-plan">Vitalício</div>
-      <div class="price-val"><sup>R$</sup>197<span> único</span></div>
-      <div class="price-period">Pague uma vez, use para sempre</div>
-      <ul class="price-features">
-        <li><span class="check">✓</span> Tudo do Premium</li>
-        <li><span class="check">✓</span> Atualizações inclusas</li>
-        <li><span class="check">✓</span> Acesso antecipado</li>
-        <li><span class="check">✓</span> Grupo exclusivo</li>
-        <li><span class="check">✓</span> Suporte vitalício</li>
-        <li><span class="check">✓</span> Bônus extras futuros</li>
-      </ul>
-      <a href="app_com_login.html" class="btn btn-outline" style="width:100%;justify-content:center;background:transparent;color:var(--red);border-color:var(--red)">Quero Vitalício</a>
-    </div>
+  <div class="section-label">Investimento</div>
+  <div class="section-title">Pague uma vez. Use para sempre.</div>
+  <p style="color:var(--light);margin-top:12px">Sem mensalidade. Sem surpresa. Sem contrato.</p>
+  <div class="price-single" data-reveal>
+    <div class="price-val"><sup>R$</sup><strong>97</strong></div>
+    <div class="price-once">pagamento único — <span>acesso vitalício completo</span></div>
+    <div class="price-divider"></div>
+    <ul class="price-features">
+      <li><span class="check">✓</span> Perfil completo da criança</li>
+      <li><span class="check">✓</span> Diário alimentar</li>
+      <li><span class="check">✓</span> Tabela de progressão</li>
+      <li><span class="check">✓</span> Cardápio semanal</li>
+      <li><span class="check">✓</span> 6 técnicas de aceitação</li>
+      <li><span class="check">✓</span> Guia de frases</li>
+      <li><span class="check">✓</span> Receitas validadas</li>
+      <li><span class="check">✓</span> Sinais de alerta</li>
+      <li><span class="check">✓</span> Dados na nuvem</li>
+      <li><span class="check">✓</span> Atualizações inclusas</li>
+    </ul>
+    <a href="app_com_login.html" class="btn btn-red btn-lg" style="width:100%;justify-content:center">🚀 Quero Acesso Agora</a>
+    <p style="margin-top:16px;font-size:13px;color:var(--light)">🔒 Garantia de 7 dias · Pagamento seguro · LGPD</p>
   </div>
 </section>
 
@@ -417,7 +386,8 @@ nav.nav-scrolled{box-shadow:0 6px 28px rgba(232,105,141,.18)}
 <section class="cta-final">
   <h2>A hora da refeição pode<br>ser mais leve a partir de hoje</h2>
   <p>Junte-se a centenas de mães que já estão usando a plataforma para transformar a relação do filho com a comida.</p>
-  <a href="app_com_login.html" class="btn btn-white btn-lg">🚀 Começar Agora</a>
+  <p style="font-size:28px;font-weight:800;margin-bottom:8px;opacity:.95">Por apenas <span style="text-decoration:line-through;opacity:.6;font-size:20px">R$197</span> R$ 97 — pagamento único</p>
+  <a href="app_com_login.html" class="btn btn-white btn-lg">🚀 Quero Acesso Agora</a>
   <div class="cta-guarantee">🔒 Garantia de 7 dias · Cancele quando quiser · Dados protegidos pela LGPD</div>
 </section>
 
@@ -507,15 +477,40 @@ function animateCounter(el) {
   requestAnimationFrame(tick);
 }
 
-/* ── VSL ── */
+/* ── VSL YouTube ── */
+const YT_VIDEO_ID = 'llToKTFn1aw';
+let ytPlayer;
+
 function playVSL() {
-  const video = document.getElementById('vslVideo');
-  const overlay = document.getElementById('vslOverlay');
-  video.play();
-  overlay.style.display = 'none';
-  video.addEventListener('ended', () => {
-    document.getElementById('vslCta').classList.add('visible');
-  }, {once: true});
+  document.getElementById('vslOverlay').style.display = 'none';
+  const tag = document.createElement('script');
+  tag.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(tag);
+}
+
+function onYouTubeIframeAPIReady() {
+  ytPlayer = new YT.Player('ytPlayer', {
+    width: '100%',
+    height: '100%',
+    videoId: YT_VIDEO_ID,
+    playerVars: {
+      autoplay: 1,
+      controls: 0,
+      modestbranding: 1,
+      rel: 0,
+      iv_load_policy: 3,
+      disablekb: 1,
+      playsinline: 1,
+      fs: 0
+    },
+    events: {
+      onStateChange: function(e) {
+        if (e.data === YT.PlayerState.ENDED) {
+          document.getElementById('vslCta').classList.add('visible');
+        }
+      }
+    }
+  });
 }
 
 /* ── FAQ suave ── */
