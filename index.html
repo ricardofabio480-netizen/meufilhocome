@@ -133,7 +133,7 @@ footer .footer-links a:hover{color:#fff}
 .vsl-section::after{content:'🍌';position:absolute;bottom:16px;left:5%;font-size:36px;opacity:.1;animation:floatEmoji 10s ease-in-out infinite reverse}
 .vsl-headline{font-size:26px;font-weight:800;color:var(--dark);margin-bottom:32px;max-width:680px;margin-left:auto;margin-right:auto;line-height:1.35}
 .vsl-headline span{color:var(--red)}
-.vsl-wrapper{position:relative;max-width:800px;margin:0 auto;border-radius:14px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.6);background:#000;aspect-ratio:16/9}
+.vsl-wrapper{position:relative;width:100%;max-width:800px;margin:0 auto;border-radius:14px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.6);background:#000;aspect-ratio:16/9;min-height:300px}
 #ytPlayer,#ytPlayer iframe{position:absolute;inset:0;width:100%;height:100%;border:none}
 .vsl-overlay{position:absolute;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .3s}
 .vsl-overlay:hover{background:rgba(0,0,0,.3)}
@@ -181,7 +181,7 @@ body.vsl-active .how,body.vsl-active .features,body.vsl-active .pricing,
 body.vsl-active .testimonials,body.vsl-active .faq,body.vsl-active .cta-final,
 body.vsl-active footer,body.vsl-active .wave{display:none}
 body.vsl-active nav{justify-content:center}
-body.vsl-active .vsl-section{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 5% 60px}
+body.vsl-active .vsl-section{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 5% 60px;width:100%}
 /* ── Contador ao vivo ── */
 .vsl-counter{display:none;align-items:center;justify-content:center;gap:8px;margin-top:18px;font-size:14px;font-weight:600;color:var(--light)}
 .vsl-counter.visible{display:flex}
