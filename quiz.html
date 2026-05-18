@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagnóstico Gratuito — Meu Filho Come!</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--red:#e63946;--red2:#c0392b;--pink:#e8698d;--dark:#1a1a2e;--light:#636e72;--text:#2d3436}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:linear-gradient(135deg,#fff8f2 0%,#fff2f6 55%,#f5f0ff 100%);min-height:100vh;overflow-x:hidden;color:var(--text)}
+
+/* ── TOPO ── */
+.top-bar{padding:18px 5%;display:flex;align-items:center;justify-content:space-between;position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(255,248,242,.92);backdrop-filter:blur(10px);border-bottom:1px solid rgba(230,57,70,.08)}
+.logo{font-size:18px;font-weight:800;color:var(--red)}
+.logo span{color:var(--pink)}
+.progress-wrap{flex:1;max-width:320px;margin:0 auto}
+.progress-label{font-size:11px;color:var(--light);font-weight:600;text-align:center;margin-bottom:5px}
+.progress-bar{height:5px;background:#f0d0d8;border-radius:50px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--pink));border-radius:50px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+.free-badge{font-size:11px;font-weight:700;color:var(--red);background:rgba(230,57,70,.1);padding:4px 12px;border-radius:50px;border:1px solid rgba(230,57,70,.2)}
+
+/* ── SLIDE ── */
+.quiz-stage{min-height:100vh;padding:100px 5% 60px;display:flex;align-items:center;justify-content:center}
+.quiz-slide{max-width:680px;width:100%;animation:slideIn .45s cubic-bezier(.4,0,.2,1)}
+@keyframes slideIn{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideOut{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-20px)}}
+.quiz-slide.leaving{animation:slideOut .3s cubic-bezier(.4,0,.2,1) forwards}
+
+.q-step{font-size:12px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px}
+.q-text{font-size:28px;font-weight:800;color:var(--dark);line-height:1.3;margin-bottom:8px}
+.q-sub{font-size:15px;color:var(--light);margin-bottom:36px;line-height:1.6;font-style:italic}
+.q-sub strong{color:var(--red);font-style:normal}
+
+/* ── OPÇÕES ── */
+.options{display:flex;flex-direction:column;gap:13px}
+.opt{display:flex;align-items:center;gap:16px;padding:18px 22px;border-radius:16px;border:2px solid #f0d8e0;background:#fff;cursor:pointer;transition:all .22s;position:relative;overflow:hidden}
+.opt::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(230,57,70,.04),transparent);opacity:0;transition:opacity .2s}
+.opt:hover{border-color:rgba(230,57,70,.4);background:#fff8f8;transform:translateX(6px);box-shadow:0 6px 24px rgba(230,57,70,.1)}
+.opt:hover::after{opacity:1}
+.opt.picked{border-color:var(--red);background:linear-gradient(90deg,#fff0f0,#fff);box-shadow:0 6px 28px rgba(230,57,70,.18)}
+.opt-ico{font-size:24px;flex-shrink:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:#f8f0f2;border-radius:12px;transition:background .2s}
+.opt.picked .opt-ico{background:rgba(230,57,70,.14)}
+.opt-body{flex:1}
+.opt-txt{font-size:15px;font-weight:600;color:var(--dark);line-height:1.3}
+.opt-desc{font-size:12px;color:var(--light);margin-top:3px;line-height:1.4}
+.opt-check{width:22px;height:22px;border-radius:50%;border:2px solid #ddd;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;font-size:12px}
+.opt.picked .opt-check{background:var(--red);border-color:var(--red);color:#fff}
+
+/* ── RESULTADO ── */
+.result-slide{max-width:680px;width:100%;text-align:center;animation:slideIn .5s cubic-bezier(.4,0,.2,1)}
+.result-anim{font-size:72px;animation:pulse 1.5s ease-in-out infinite;display:block;margin-bottom:20px}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.result-badge{display:inline-block;background:linear-gradient(135deg,var(--red),var(--pink));color:#fff;padding:7px 22px;border-radius:50px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:22px}
+.result-title{font-size:30px;font-weight:800;color:var(--dark);margin-bottom:14px;line-height:1.3}
+.result-title span{color:var(--red)}
+.result-msg{font-size:17px;font-weight:700;color:var(--dark);line-height:1.5;margin-bottom:24px;max-width:520px;margin-left:auto;margin-right:auto}
+.result-msg span{color:var(--red)}
+/* ── Espelho da dor ── */
+.mirror-box{background:linear-gradient(135deg,#fff5f5,#fff0f5);border-radius:16px;padding:20px 22px;margin-bottom:24px;text-align:left}
+.mirror-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--red);margin-bottom:14px}
+.mirror-items{display:flex;flex-direction:column;gap:10px}
+.mirror-item{display:flex;align-items:center;gap:12px;font-size:15px;font-weight:600;color:var(--dark)}
+.mirror-item-ico{font-size:22px;flex-shrink:0}
+.mirror-closing{font-size:13px;color:var(--light);margin-top:14px;padding-top:12px;border-top:1px solid rgba(230,57,70,.12);font-style:italic}
+/* ── Future pacing ── */
+.future-box{background:#fff;border:1px solid rgba(230,57,70,.12);border-radius:18px;padding:24px;margin-bottom:28px;text-align:left;box-shadow:0 4px 20px rgba(230,57,70,.07)}
+.future-label{font-size:13px;font-weight:700;color:var(--light);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.future-title{font-size:17px;font-weight:800;color:var(--dark);margin-bottom:16px;line-height:1.4}
+.future-items{display:flex;flex-direction:column;gap:10px}
+.future-item{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--text);line-height:1.5}
+.future-item-ico{font-size:18px;flex-shrink:0;margin-top:1px}
+/* ── CTA ── */
+.result-cta-box{background:linear-gradient(135deg,#1a1a2e,#2d0a18);border-radius:20px;padding:32px 28px;text-align:center}
+.result-cta-eyebrow{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,.5);margin-bottom:12px}
+.result-cta-title{font-size:22px;font-weight:800;color:#fff;margin-bottom:10px;line-height:1.3}
+.result-cta-sub{font-size:14px;color:rgba(255,255,255,.65);margin-bottom:24px;line-height:1.7}
+.btn-go{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:20px 36px;border-radius:50px;background:linear-gradient(135deg,var(--red),#ff6b6b);color:#fff;font-size:18px;font-weight:800;border:none;cursor:pointer;box-shadow:0 8px 36px rgba(230,57,70,.55);transition:transform .2s,box-shadow .2s;position:relative;overflow:hidden;width:100%}
+.btn-go::after{content:'';position:absolute;top:0;left:-130%;width:55%;height:100%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.28),transparent);transform:skewX(-15deg);animation:shimmer 3s infinite 1.5s}
+@keyframes shimmer{0%,20%{left:-130%}55%,100%{left:165%}}
+.btn-go:hover{transform:translateY(-3px);box-shadow:0 14px 44px rgba(230,57,70,.65)}
+.btn-go-sub{font-size:12px;color:rgba(255,255,255,.5);margin-top:10px}
+.result-guarantee{margin-top:16px;font-size:12px;color:rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;gap:6px}
+/* ── Traits ── */
+.result-traits{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px;text-align:left}
+.trait{background:#fff;border:1px solid rgba(230,57,70,.12);border-radius:14px;padding:16px;display:flex;gap:12px;align-items:flex-start;box-shadow:0 4px 16px rgba(230,57,70,.07)}
+.trait-ico{font-size:22px;flex-shrink:0}
+.trait-txt{font-size:13px;color:var(--text);line-height:1.5;font-weight:500}
+/* ── Botão Prosseguir ── */
+.btn-next-wrap{margin-top:24px;display:flex;justify-content:flex-end}
+.btn-next{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;border-radius:50px;background:linear-gradient(135deg,var(--red),#ff6b6b);color:#fff;font-size:15px;font-weight:700;border:none;cursor:pointer;box-shadow:0 6px 22px rgba(230,57,70,.38);transition:all .25s;opacity:0;pointer-events:none;transform:translateY(8px)}
+.btn-next.visible{opacity:1;pointer-events:all;transform:translateY(0)}
+.btn-next:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(230,57,70,.5)}
+
+/* ── LOADING ── */
+.loading-slide{text-align:center;max-width:480px;width:100%}
+.loading-ico{font-size:56px;margin-bottom:24px;animation:spin 1.2s linear infinite;display:block}
+@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.loading-title{font-size:22px;font-weight:800;color:var(--dark);margin-bottom:10px}
+.loading-sub{font-size:15px;color:var(--light);line-height:1.6}
+.dots span{animation:blink 1.4s infinite}
+.dots span:nth-child(2){animation-delay:.2s}
+.dots span:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:0}40%{opacity:1}}
+
+/* ── RESPONSIVE ── */
+@media(max-width:600px){
+.q-text{font-size:22px}
+.result-traits{grid-template-columns:1fr}
+.result-title{font-size:24px}
+.top-bar .free-badge{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- TOPO FIXO -->
+<div class="top-bar">
+  <div class="logo">Meu Filho Come!<span> Pro</span></div>
+  <div class="progress-wrap">
+    <div class="progress-label" id="progressLabel">Pergunta 1 de 10</div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:10%"></div></div>
+  </div>
+  <div class="free-badge">🎁 100% Gratuito</div>
+</div>
+
+<!-- ÁREA DO QUIZ -->
+<div class="quiz-stage" id="quizStage">
+  <div class="quiz-slide" id="quizSlide"></div>
+</div>
+
+<script>
+const Q = [
+  {
+    text: 'Qual é a idade do seu filho?',
+    sub: 'Vamos personalizar seu diagnóstico com base na fase dele.',
+    opts: [
+      {ico:'👶', txt:'6 a 12 meses', desc:'Fase de introdução alimentar'},
+      {ico:'🧒', txt:'12 a 18 meses', desc:'Pico da curiosidade e neofobia'},
+      {ico:'🚶', txt:'18 meses a 2 anos', desc:'Fase de autonomia e birras'},
+      {ico:'🧒‍♂️', txt:'2 a 3 anos ou mais', desc:'Hábitos mais fixos se formando'}
+    ]
+  },
+  {
+    text: 'Com que frequência a hora da refeição termina em choro, birra ou briga?',
+    sub: 'Seja honesta — aqui é um espaço seguro, sem julgamentos.',
+    opts: [
+      {ico:'😌', txt:'Raramente acontece', desc:'Às vezes tem resistência, mas é tranquilo'},
+      {ico:'😟', txt:'Algumas vezes por semana', desc:'Tem dias bons e dias muito difíceis'},
+      {ico:'😰', txt:'Quase todos os dias', desc:'A tensão já virou parte da rotina'},
+      {ico:'😩', txt:'Todos os dias, sem exceção', desc:'A refeição virou o momento mais temido do dia'}
+    ]
+  },
+  {
+    text: 'Quando seu filho recusa a comida que você preparou, o que você sente?',
+    sub: 'Esse sentimento é mais comum do que você imagina — e tem nome.',
+    opts: [
+      {ico:'😤', txt:'Frustração e impotência', desc:'Deu tanto trabalho e ele nem toca'},
+      {ico:'😟', txt:'Medo de ele não crescer saudável', desc:'A preocupação com a nutrição nunca sai da cabeça'},
+      {ico:'😢', txt:'Culpa profunda, como se fosse falha minha', desc:'Me sinto uma mãe ruim nessas horas'},
+      {ico:'💔', txt:'Tudo isso ao mesmo tempo', desc:'É uma mistura de emoções que me esgota'}
+    ]
+  },
+  {
+    text: 'Você já deixou de sair, visitar alguém ou ir a um restaurante por causa da alimentação do seu filho?',
+    sub: 'Quando a seletividade impacta a vida social, é um sinal importante.',
+    opts: [
+      {ico:'😊', txt:'Nunca passei por isso', desc:'Levo ele em qualquer lugar sem problema'},
+      {ico:'🤔', txt:'Algumas vezes evitei situações', desc:'Já pensei duas vezes antes de sair'},
+      {ico:'😔', txt:'Evito muitas situações por causa disso', desc:'Prefiro ficar em casa do que passar constrangimento'},
+      {ico:'😞', txt:'Isso mudou completamente nossa rotina', desc:'A vida social da família foi prejudicada'}
+    ]
+  },
+  {
+    text: 'Com que frequência vem o pensamento: "Será que estou errando como mãe?"',
+    sub: 'Esse pensamento machuca muito. E ele tem uma razão para aparecer.',
+    opts: [
+      {ico:'💪', txt:'Raramente penso isso', desc:'Me sinto segura nas minhas escolhas'},
+      {ico:'🌀', txt:'Às vezes, quando ele recusa', desc:'Aparece mas consigo lidar'},
+      {ico:'😞', txt:'Com muita frequência', desc:'Esse pensamento me acompanha todo dia'},
+      {ico:'💔', txt:'Todo dia, diversas vezes', desc:'Esse peso me esgota completamente'}
+    ]
+  },
+  {
+    text: 'O que você já tentou para melhorar a situação?',
+    sub: 'Cada tentativa mostra o quanto você ama seu filho.',
+    opts: [
+      {ico:'🌱', txt:'Ainda não tentei nada específico', desc:'Não sabia por onde começar'},
+      {ico:'📱', txt:'Pesquisei na internet e tentei algumas dicas', desc:'Nada funcionou de forma consistente'},
+      {ico:'📚', txt:'Li muito sobre o assunto mas não vi resultado', desc:'A teoria é clara mas na prática não funciona'},
+      {ico:'😓', txt:'Tentei absolutamente tudo — estou exausta', desc:'Nada resolve e estou sem esperança'}
+    ]
+  },
+  {
+    text: 'Qual é o seu maior medo em relação à alimentação do seu filho?',
+    sub: 'Nomear o medo é o primeiro passo para superá-lo.',
+    opts: [
+      {ico:'⚕️', txt:'Que ele não receba os nutrientes que precisa', desc:'Tenho medo de prejudicar o desenvolvimento dele'},
+      {ico:'📈', txt:'Que isso vire um problema sério mais pra frente', desc:'Que o cardápio limitado persista para sempre'},
+      {ico:'🧠', txt:'Que eu esteja prejudicando ele sem querer', desc:'Que minha abordagem esteja piorando as coisas'},
+      {ico:'🌪️', txt:'Todos esses medos ao mesmo tempo', desc:'É difícil até dormir pensando nisso'}
+    ]
+  },
+  {
+    text: 'Como você descreveria a hora da refeição hoje na sua casa?',
+    sub: 'Seja sincera. Só assim conseguimos entender de verdade.',
+    opts: [
+      {ico:'⚡', txt:'Tensa e estressante para toda a família', desc:'Todo mundo fica no limite'},
+      {ico:'😰', txt:'Já chego com medo do que vai acontecer', desc:'A ansiedade começa antes de sentar à mesa'},
+      {ico:'🚧', txt:'Evito certos alimentos para não brigar', desc:'Simplifico o cardápio só para ter paz'},
+      {ico:'⚔️', txt:'Um campo de batalha todos os dias', desc:'É desgastante demais para descrever'}
+    ]
+  },
+  {
+    text: 'Se a hora da refeição fosse leve, sem choro e sem briga, o que mudaria na sua vida?',
+    sub: 'Isso não é um sonho distante. É mais possível do que você imagina.',
+    opts: [
+      {ico:'🌸', txt:'Eu me sentiria uma mãe muito melhor', desc:'A culpa e a frustração finalmente iriam embora'},
+      {ico:'👨‍👩‍👧', txt:'Toda a família estaria mais feliz e unida', desc:'A refeição voltaria a ser um momento de amor'},
+      {ico:'⚡', txt:'Teria mais energia e leveza no dia a dia', desc:'Esse peso saindo me daria muito mais paz'},
+      {ico:'✨', txt:'Tudo isso — e muito mais', desc:'Minha vida inteira ficaria mais leve'}
+    ]
+  },
+  {
+    text: 'Você está pronta para aprender uma abordagem diferente e transformar a relação do seu filho com a comida?',
+    sub: '<strong>A solução existe. Ela está mais próxima do que você imagina.</strong>',
+    opts: [
+      {ico:'🚀', txt:'Sim! Estou pronta e quero começar agora', desc:'Chega de sofrer — quero mudar essa realidade'},
+      {ico:'🤞', txt:'Quero muito, mas tenho medo de me decepcionar', desc:'Já tentei antes e não vi resultado'},
+      {ico:'🙋', txt:'Não sei por onde começar, mas quero tentar', desc:'Preciso de um guia claro e objetivo'},
+      {ico:'💪', txt:'Já tentei tudo — mas estou aqui, então sim', desc:'Estou exhausta mas não vou desistir do meu filho'}
+    ]
+  }
+];
+
+const PROFILES = [
+  {
+    badge: 'Seletividade em Estágio Inicial',
+    ico: '🌱',
+    title: 'Seu filho está no começo — e isso é uma <span>grande vantagem</span>',
+    msg: 'Identificamos sinais de seletividade em fase inicial. Agir agora, com as técnicas certas, é o que vai impedir que isso se consolide em um padrão difícil de quebrar. Você chegou no momento certo.',
+    traits: [
+      {ico:'✅', txt:'Há espaço amplo para ampliar o cardápio agora'},
+      {ico:'⏱️', txt:'Quanto antes começar, mais rápido e fácil fica'},
+      {ico:'💡', txt:'Técnicas simples já geram resultados visíveis'},
+      {ico:'🌈', txt:'A relação dele com a comida ainda está sendo formada'}
+    ]
+  },
+  {
+    badge: 'Seletividade Moderada Identificada',
+    ico: '🔍',
+    title: 'Você não está errando — <span>só precisa da abordagem certa</span>',
+    msg: 'Seu filho já apresenta padrões estabelecidos de recusa. Não é falta de esforço da sua parte — é que cada criança precisa de uma estratégia específica. A boa notícia: existe um caminho claro para sair disso.',
+    traits: [
+      {ico:'📊', txt:'Registro diário das refeições faz toda a diferença'},
+      {ico:'🧠', txt:'Técnicas de neurociência alimentar são essenciais'},
+      {ico:'💬', txt:'O que você diz (e não diz) na mesa muda tudo'},
+      {ico:'📈', txt:'Com consistência, a evolução é real e mensurável'}
+    ]
+  },
+  {
+    badge: 'Seletividade Intensa — Você Precisa de Apoio',
+    ico: '❤️',
+    title: 'Você carrega um peso muito pesado. <span>Isso vai mudar.</span>',
+    msg: 'Reconhecemos o quanto essa situação te esgota — emocional e fisicamente. A seletividade intensa tem solução, mas exige estratégia, estrutura e apoio. Você não precisa mais resolver isso sozinha.',
+    traits: [
+      {ico:'🏋️', txt:'Exposição escalonada é a técnica mais eficaz aqui'},
+      {ico:'📖', txt:'Rastrear o progresso revela avanços invisíveis'},
+      {ico:'❤️', txt:'Sua exaustão é sinal de que você nunca desistiu'},
+      {ico:'🤝', txt:'A partir de agora, você tem um sistema do seu lado'}
+    ]
+  }
+];
+
+let step = 0;
+let answers = [];
+
+function getProfile() {
+  const score = answers.slice(1, 5).reduce((s, a) => s + a, 0);
+  if (score <= 4) return 0;
+  if (score <= 8) return 1;
+  return 2;
+}
+
+function render() {
+  const slide = document.getElementById('quizSlide');
+  const data = Q[step];
+  const pct = ((step + 1) / Q.length) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = `Pergunta ${step + 1} de ${Q.length}`;
+  const isLast = step === Q.length - 1;
+
+  slide.innerHTML = `
+    <div class="q-step">Pergunta ${step + 1} de ${Q.length}</div>
+    <div class="q-text">${data.text}</div>
+    <div class="q-sub">${data.sub}</div>
+    <div class="options">
+      ${data.opts.map((o, i) => `
+        <div class="opt" onclick="pick(this, ${i})">
+          <div class="opt-ico">${o.ico}</div>
+          <div class="opt-body">
+            <div class="opt-txt">${o.txt}</div>
+            ${o.desc ? `<div class="opt-desc">${o.desc}</div>` : ''}
+          </div>
+          <div class="opt-check">✓</div>
+        </div>
+      `).join('')}
+    </div>
+    <div class="btn-next-wrap">
+      <button class="btn-next" id="btnNext" onclick="nextStep()">
+        ${isLast ? 'Ver meu diagnóstico ✨' : 'Prosseguir →'}
+      </button>
+    </div>
+  `;
+}
+
+function pick(el, idx) {
+  document.querySelectorAll('.opt').forEach(o => o.classList.remove('picked'));
+  el.classList.add('picked');
+  answers[step] = idx;
+  const btn = document.getElementById('btnNext');
+  if (btn) btn.classList.add('visible');
+}
+
+function nextStep() {
+  step++;
+  const slide = document.getElementById('quizSlide');
+  slide.classList.add('leaving');
+  setTimeout(() => {
+    slide.classList.remove('leaving');
+    if (step < Q.length) {
+      render();
+    } else {
+      showLoading();
+    }
+  }, 300);
+}
+
+function showLoading() {
+  const stage = document.getElementById('quizStage');
+  document.getElementById('progressLabel').textContent = 'Analisando suas respostas...';
+  document.getElementById('progressFill').style.width = '100%';
+
+  stage.innerHTML = `
+    <div class="loading-slide">
+      <span class="loading-ico">⚙️</span>
+      <div class="loading-title">Analisando suas respostas<span class="dots"><span>.</span><span>.</span><span>.</span></span></div>
+      <div class="loading-sub">Estamos montando o diagnóstico personalizado<br>para o seu filho. Um segundo...</div>
+    </div>
+  `;
+
+  setTimeout(showResult, 2200);
+}
+
+function getMirror() {
+  const feelingsIco = ['😤','😟','😢','💔'];
+  const feelingsTxt = ['Sente frustração quando ele recusa','Tem medo de ele não crescer bem','Carrega culpa — como se fosse sua falha','Sente tudo ao mesmo tempo'];
+  const mealtimeIco = ['⚡','😰','🚧','⚔️'];
+  const mealtimeTxt = ['A refeição é tensa para a família','Já chega com medo do que vai acontecer','Evita alimentos só para ter paz','A refeição virou um campo de batalha'];
+  const triedIco = ['🌱','📱','📚','😓'];
+  const triedTxt = ['Ainda não sabe por onde começar','Pesquisou muito, sem resultado','Estudou bastante — nada funcionou','Tentou tudo e está exausta'];
+
+  return [
+    {ico: feelingsIco[answers[2]??0], txt: feelingsTxt[answers[2]??0]},
+    {ico: mealtimeIco[answers[7]??0], txt: mealtimeTxt[answers[7]??0]},
+    {ico: triedIco[answers[5]??0],    txt: triedTxt[answers[5]??0]}
+  ];
+}
+
+function showResult() {
+  const p = PROFILES[getProfile()];
+  const mirror = getMirror();
+  const stage = document.getElementById('quizStage');
+  document.getElementById('progressLabel').textContent = 'Diagnóstico concluído!';
+  document.getElementById('progressFill').style.width = '100%';
+
+  stage.innerHTML = `
+    <div class="result-slide">
+      <span class="result-anim">${p.ico}</span>
+      <div class="result-badge">${p.badge}</div>
+      <div class="result-title">${p.title}</div>
+      <div class="result-msg"><span>Isso não é falta de esforço.</span> É falta da ferramenta certa.</div>
+
+      <div class="mirror-box">
+        <div class="mirror-label">💬 O que você revelou sobre sua situação</div>
+        <div class="mirror-items">
+          ${mirror.map(m => `
+            <div class="mirror-item">
+              <span class="mirror-item-ico">${m.ico}</span>
+              <span>${m.txt}</span>
+            </div>
+          `).join('')}
+        </div>
+        <div class="mirror-closing">Você não está errando — está sem as ferramentas certas. Isso vai mudar agora.</div>
+      </div>
+
+      <div class="future-box">
+        <div class="future-label">✨ <span>Imagine daqui a 30 dias...</span></div>
+        <div class="future-title">Como seria a sua vida se a hora da refeição fosse leve?</div>
+        <div class="future-items">
+          <div class="future-item"><span class="future-item-ico">🌸</span><span>Seu filho sentado à mesa, curioso, provando um alimento novo sem choro</span></div>
+          <div class="future-item"><span class="future-item-ico">💆‍♀️</span><span>Você sem aquele nó no estômago antes de cada refeição</span></div>
+          <div class="future-item"><span class="future-item-ico">👨‍👩‍👧</span><span>A família reunida, sem tensão, sem briga — a refeição voltando a ser momento de amor</span></div>
+          <div class="future-item"><span class="future-item-ico">💪</span><span>A culpa e o medo saindo de vez — você se sentindo a mãe que sempre quis ser</span></div>
+        </div>
+      </div>
+
+      <div class="result-cta-box">
+        <div class="result-cta-eyebrow">Isso é possível. E começa aqui.</div>
+        <div class="result-cta-title">Quero esse futuro<br>para o meu filho</div>
+        <div class="result-cta-sub">Veja gratuitamente como centenas de mães já transformaram a hora da refeição — com uma abordagem baseada em neurociência e construída para o perfil do seu filho.</div>
+        <button class="btn-go" onclick="goToLanding()">
+          Quero isso para o meu filho →
+        </button>
+        <div class="btn-go-sub">Veja gratuitamente como funciona</div>
+        <div class="result-guarantee">🔒 Sem compromisso · 100% gratuito · Baseado em neurociência</div>
+      </div>
+    </div>
+  `;
+}
+
+function goToLanding() {
+  window.location.href = 'index.html';
+}
+
+render();
+</script>
+</body>
+</html>
