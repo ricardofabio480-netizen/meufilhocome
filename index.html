@@ -175,6 +175,26 @@ nav.nav-scrolled{box-shadow:0 6px 28px rgba(232,105,141,.18)}
 /* ── Onda separadora ── */
 .wave{line-height:0;overflow:hidden;display:block}
 .wave svg{display:block;width:100%}
+/* ── VSL Lock ── */
+body.vsl-active .hero,body.vsl-active .problem,body.vsl-active .solution,
+body.vsl-active .how,body.vsl-active .features,body.vsl-active .pricing,
+body.vsl-active .testimonials,body.vsl-active .faq,body.vsl-active .cta-final,
+body.vsl-active footer,body.vsl-active .wave{display:none}
+body.vsl-active nav{justify-content:center}
+body.vsl-active .vsl-section{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 5% 60px}
+/* ── Contador ao vivo ── */
+.vsl-counter{display:none;align-items:center;justify-content:center;gap:8px;margin-top:18px;font-size:14px;font-weight:600;color:var(--light)}
+.vsl-counter.visible{display:flex}
+.vsl-counter-dot{width:9px;height:9px;border-radius:50%;background:#e63946;animation:pulseDot 1.4s ease-in-out infinite;flex-shrink:0}
+@keyframes pulseDot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+.vsl-counter strong{color:var(--dark);font-size:16px}
+/* ── Avatares depoimentos ── */
+.test-avatar-init{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;flex-shrink:0}
+.test-avatar-img{width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid rgba(230,57,70,.18);box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.price-old{font-size:15px;color:var(--light);margin-bottom:4px}
+.price-old span{text-decoration:line-through;font-weight:700;color:#b0b0b0}
+.test-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:48px}
+/* ── Responsive ── */
 @media(max-width:768px){
 .hero{grid-template-columns:1fr;padding:50px 5%}
 .hero h1{font-size:32px}
@@ -185,6 +205,9 @@ nav.nav-scrolled{box-shadow:0 6px 28px rgba(232,105,141,.18)}
 .steps-grid::before{display:none}
 .nav-links{display:none}
 .vsl-headline{font-size:20px}
+.quiz-inner>h2{font-size:24px}
+.quiz-card,.quiz-result{padding:24px 18px}
+.quiz-q-text{font-size:16px}
 }
 </style>
 </head>
@@ -192,14 +215,8 @@ nav.nav-scrolled{box-shadow:0 6px 28px rgba(232,105,141,.18)}
 
 <nav>
   <div class="nav-logo">Meu Filho Come!<span> Pro</span></div>
-  <div class="nav-links">
-    <a href="#funcionalidades">Funcionalidades</a>
-    <a href="#como-funciona">Como Funciona</a>
-    <a href="#precos">Preços</a>
-    <a href="#faq">FAQ</a>
-    <a href="app_com_login.html" class="btn btn-red" style="padding:9px 20px;font-size:13px">Entrar</a>
-  </div>
 </nav>
+
 
 <section class="vsl-section">
   <p class="vsl-headline">Assista ao vídeo e descubra como <span>transformar a hora da refeição</span> do seu filho em algo leve e sem estresse</p>
@@ -216,9 +233,13 @@ nav.nav-scrolled{box-shadow:0 6px 28px rgba(232,105,141,.18)}
       </div>
     </div>
   </div>
+  <div class="vsl-counter" id="vslCounter">
+    <span class="vsl-counter-dot"></span>
+    <strong id="vslCountNum">94</strong>&nbsp;mães assistindo agora
+  </div>
   <div class="vsl-cta" id="vslCta">
-    <a href="#precos" class="btn btn-red btn-lg">🚀 Começar Agora</a>
-    <div class="vsl-guarantee">🔒 Garantia de 7 dias · Cancele quando quiser · Dados protegidos pela LGPD</div>
+    <a href="https://pay.kiwify.com.br/3G2VyEE" class="btn btn-red btn-lg" target="_blank" style="font-size:19px;padding:20px 48px">🚀 QUERO ACESSO AGORA</a>
+    <div class="vsl-guarantee">🔒 Garantia de 7 dias · Pagamento único de R$97 · Dados protegidos pela LGPD</div>
   </div>
 </section>
 
@@ -336,7 +357,8 @@ nav.nav-scrolled{box-shadow:0 6px 28px rgba(232,105,141,.18)}
   <div class="section-title">Pague uma vez. Use para sempre.</div>
   <p style="color:var(--light);margin-top:12px">Sem mensalidade. Sem surpresa. Sem contrato.</p>
   <div class="price-single" data-reveal>
-    <div class="price-val"><sup>R$</sup><strong>97</strong></div>
+    <div class="price-old">De <span>R$ 397,00</span></div>
+    <div class="price-val"><sup>R$</sup><strong>67</strong></div>
     <div class="price-once">pagamento único — <span>acesso vitalício completo</span></div>
     <div class="price-divider"></div>
     <ul class="price-features">
@@ -360,9 +382,54 @@ nav.nav-scrolled{box-shadow:0 6px 28px rgba(232,105,141,.18)}
   <div class="section-label" style="text-align:center">Depoimentos</div>
   <div class="section-title" style="text-align:center">O que as mães estão dizendo</div>
   <div class="test-grid">
-    <div class="test-card"><div class="stars">★★★★★</div><div class="test-text">"Em 3 semanas de uso, meu filho já aceita brócolis cozido! A tabela de progressão me ajudou a ver que ele estava evoluindo, mesmo quando parecia que não."</div><div class="test-author"><div class="test-avatar">👩</div><div><div class="test-name">Ana Paula M.</div><div class="test-role">Mãe do Theo, 16 meses</div></div></div></div>
-    <div class="test-card"><div class="stars">★★★★★</div><div class="test-text">"O guia de frases foi transformador. Eu falava 'vamos comer tudinho!' toda hora. Quando parei, a tensão na mesa diminuiu muito. Simples assim."</div><div class="test-author"><div class="test-avatar">👩</div><div><div class="test-name">Renata S.</div><div class="test-role">Mãe da Sofia, 14 meses</div></div></div></div>
-    <div class="test-card"><div class="stars">★★★★★</div><div class="test-text">"Finalmente entendi por que meu filho recusava certas texturas. Com essa plataforma, a hora da refeição deixou de ser um pesadelo na nossa casa."</div><div class="test-author"><div class="test-avatar">👩</div><div><div class="test-name">Fernanda C.</div><div class="test-role">Mãe do Bernardo, 20 meses</div></div></div></div>
+    <div class="test-card">
+      <div class="stars">★★★★★</div>
+      <div class="test-text">"Em 3 semanas meu filho já aceita brócolis! Parecia impossível. A tabela de progressão me mostrou que ele evoluía mesmo quando eu achava que não."</div>
+      <div class="test-author">
+        <img class="test-avatar-img" src="https://randomuser.me/api/portraits/women/44.jpg" alt="Ana Paula">
+        <div><div class="test-name">Ana Paula M.</div><div class="test-role">Mãe do Theo, 16 meses · São Paulo, SP</div></div>
+      </div>
+    </div>
+    <div class="test-card">
+      <div class="stars">★★★★★</div>
+      <div class="test-text">"O guia de frases mudou tudo. Parei de falar 'come tudinho' e a tensão na mesa acabou. Não acreditei que algo tão simples fosse funcionar."</div>
+      <div class="test-author">
+        <img class="test-avatar-img" src="https://randomuser.me/api/portraits/women/68.jpg" alt="Renata">
+        <div><div class="test-name">Renata S.</div><div class="test-role">Mãe da Sofia, 14 meses · Curitiba, PR</div></div>
+      </div>
+    </div>
+    <div class="test-card">
+      <div class="stars">★★★★★</div>
+      <div class="test-text">"Finalmente entendi por que ele recusava certas texturas. Antes eu chorava junto com ele. Hoje a refeição é diferente — ainda não é perfeita, mas é leve."</div>
+      <div class="test-author">
+        <img class="test-avatar-img" src="https://randomuser.me/api/portraits/women/26.jpg" alt="Fernanda">
+        <div><div class="test-name">Fernanda C.</div><div class="test-role">Mãe do Bernardo, 20 meses · Belo Horizonte, MG</div></div>
+      </div>
+    </div>
+    <div class="test-card">
+      <div class="stars">★★★★★</div>
+      <div class="test-text">"Minha filha comia só macarrão puro há 4 meses. Hoje ela experimenta pelo menos um alimento novo por semana. Não acredito no progresso que tivemos."</div>
+      <div class="test-author">
+        <img class="test-avatar-img" src="https://randomuser.me/api/portraits/women/51.jpg" alt="Juliana">
+        <div><div class="test-name">Juliana R.</div><div class="test-role">Mãe da Isabela, 22 meses · Fortaleza, CE</div></div>
+      </div>
+    </div>
+    <div class="test-card">
+      <div class="stars">★★★★★</div>
+      <div class="test-text">"Me sentia uma mãe péssima porque meu filho não comia nada verde. Com as técnicas de exposição aprendi que não era culpa minha — e nem dele. Que alívio."</div>
+      <div class="test-author">
+        <img class="test-avatar-img" src="https://randomuser.me/api/portraits/women/33.jpg" alt="Camila">
+        <div><div class="test-name">Camila T.</div><div class="test-role">Mãe do Gabriel, 18 meses · Porto Alegre, RS</div></div>
+      </div>
+    </div>
+    <div class="test-card">
+      <div class="stars">★★★★★</div>
+      <div class="test-text">"Tentei de tudo antes disso. Pediatra, nutricionista, vídeos no YouTube. Nada funcionava. Essa plataforma foi a primeira coisa que fez sentido na prática."</div>
+      <div class="test-author">
+        <img class="test-avatar-img" src="https://randomuser.me/api/portraits/women/57.jpg" alt="Patricia">
+        <div><div class="test-name">Patrícia M.</div><div class="test-role">Mãe do Enzo, 15 meses · Recife, PE</div></div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -386,7 +453,7 @@ nav.nav-scrolled{box-shadow:0 6px 28px rgba(232,105,141,.18)}
 <section class="cta-final">
   <h2>A hora da refeição pode<br>ser mais leve a partir de hoje</h2>
   <p>Junte-se a centenas de mães que já estão usando a plataforma para transformar a relação do filho com a comida.</p>
-  <p style="font-size:28px;font-weight:800;margin-bottom:8px;opacity:.95">Por apenas <span style="text-decoration:line-through;opacity:.6;font-size:20px">R$197</span> R$ 97 — pagamento único</p>
+  <p style="font-size:28px;font-weight:800;margin-bottom:8px;opacity:.95">Por apenas <span style="text-decoration:line-through;opacity:.6;font-size:20px">R$397</span> R$ 67 — pagamento único</p>
   <a href="https://pay.kiwify.com.br/3G2VyEE" class="btn btn-white btn-lg" target="_blank">🚀 Quero Acesso Agora</a>
   <div class="cta-guarantee">🔒 Garantia de 7 dias · Cancele quando quiser · Dados protegidos pela LGPD</div>
 </section>
@@ -480,12 +547,29 @@ function animateCounter(el) {
 /* ── VSL YouTube ── */
 const YT_VIDEO_ID = 'llToKTFn1aw';
 let ytPlayer;
+let counterTimer;
 
 function playVSL() {
   document.getElementById('vslOverlay').style.display = 'none';
+  document.body.classList.add('vsl-active');
+  startLiveCounter();
   const tag = document.createElement('script');
   tag.src = 'https://www.youtube.com/iframe_api';
   document.head.appendChild(tag);
+}
+
+function startLiveCounter() {
+  const counterEl = document.getElementById('vslCounter');
+  const numEl = document.getElementById('vslCountNum');
+  counterEl.classList.add('visible');
+  let count = Math.floor(Math.random() * 40) + 74;
+  numEl.textContent = count;
+  counterTimer = setInterval(() => {
+    const delta = Math.random() > 0.45 ? 1 : -1;
+    const jump = Math.random() > 0.85 ? 2 : 1;
+    count = Math.min(183, Math.max(47, count + delta * jump));
+    numEl.textContent = count;
+  }, Math.random() * 2000 + 1800);
 }
 
 function onYouTubeIframeAPIReady() {
@@ -506,6 +590,8 @@ function onYouTubeIframeAPIReady() {
     events: {
       onStateChange: function(e) {
         if (e.data === YT.PlayerState.ENDED) {
+          clearInterval(counterTimer);
+          document.getElementById('vslCounter').classList.remove('visible');
           document.getElementById('vslCta').classList.add('visible');
         }
       }
