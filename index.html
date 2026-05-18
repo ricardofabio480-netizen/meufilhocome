@@ -182,6 +182,17 @@ body.vsl-active .testimonials,body.vsl-active .faq,body.vsl-active .cta-final,
 body.vsl-active footer,body.vsl-active .wave{display:none}
 body.vsl-active nav{justify-content:center}
 body.vsl-active .vsl-section{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 5% 60px;width:100%}
+/* ── Pause overlay ── */
+.pause-overlay{position:absolute;inset:0;background:rgba(10,0,20,.88);display:none;align-items:center;justify-content:center;z-index:10;border-radius:14px;backdrop-filter:blur(3px)}
+.pause-overlay.show{display:flex}
+.pause-box{text-align:center;padding:32px 28px;max-width:420px}
+.pause-ico{font-size:52px;margin-bottom:16px;animation:heartbeat 1.2s ease-in-out infinite}
+@keyframes heartbeat{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+.pause-title{font-size:22px;font-weight:800;color:#fff;margin-bottom:12px;line-height:1.3}
+.pause-title span{color:#ff6b6b}
+.pause-text{font-size:14px;color:rgba(255,255,255,.75);line-height:1.7;margin-bottom:24px}
+.pause-btn{padding:14px 32px;border-radius:50px;background:linear-gradient(135deg,var(--red),#ff6b6b);color:#fff;font-size:15px;font-weight:800;border:none;cursor:pointer;box-shadow:0 6px 24px rgba(230,57,70,.5);transition:transform .2s}
+.pause-btn:hover{transform:scale(1.05)}
 /* ── Contador ao vivo ── */
 .vsl-counter{display:none;align-items:center;justify-content:center;gap:8px;margin-top:18px;font-size:14px;font-weight:600;color:var(--light)}
 .vsl-counter.visible{display:flex}
@@ -222,6 +233,14 @@ body.vsl-active .vsl-section{min-height:100vh;display:flex;flex-direction:column
   <p class="vsl-headline">Assista ao vídeo e descubra como <span>transformar a hora da refeição</span> do seu filho em algo leve e sem estresse</p>
   <div class="vsl-wrapper">
     <div id="ytPlayer"></div>
+    <div class="pause-overlay" id="pauseOverlay">
+      <div class="pause-box">
+        <div class="pause-ico">💔</div>
+        <div class="pause-title">Sua filha está esperando por <span>uma mãe sem culpa.</span></div>
+        <div class="pause-text">Você chegou até aqui porque quer mudar. Não pare agora — a parte mais importante do vídeo ainda está por vir. Cada segundo conta.</div>
+        <button class="pause-btn" onclick="resumeVSL()">▶ Continuar assistindo</button>
+      </div>
+    </div>
     <div class="vsl-overlay" id="vslOverlay" onclick="playVSL()">
       <div class="vsl-pulse-wrap">
         <div class="vsl-ring"></div>
@@ -587,9 +606,14 @@ function onYouTubeIframeAPIReady() {
     },
     events: {
       onStateChange: function(e) {
-        if (e.data === YT.PlayerState.ENDED) {
+        if (e.data === YT.PlayerState.PAUSED) {
+          document.getElementById('pauseOverlay').classList.add('show');
+        } else if (e.data === YT.PlayerState.PLAYING) {
+          document.getElementById('pauseOverlay').classList.remove('show');
+        } else if (e.data === YT.PlayerState.ENDED) {
           clearInterval(counterTimer);
           document.getElementById('vslCounter').classList.remove('visible');
+          document.getElementById('pauseOverlay').classList.remove('show');
           document.body.classList.remove('vsl-active');
           document.getElementById('vslCta').classList.add('visible');
         }
@@ -599,6 +623,11 @@ function onYouTubeIframeAPIReady() {
 }
 
 /* ── FAQ suave ── */
+function resumeVSL() {
+  document.getElementById('pauseOverlay').classList.remove('show');
+  if (ytPlayer) ytPlayer.playVideo();
+}
+
 function togFaq(el) {
   const ans = el.nextElementSibling;
   const arrow = el.querySelector('.faq-arrow');
