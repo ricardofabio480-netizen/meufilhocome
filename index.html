@@ -211,7 +211,7 @@ body.vsl-active .vsl-section{min-height:100vh;display:flex;flex-direction:column
 }
 </style>
 </head>
-<body>
+<body class="vsl-active">
 
 <nav>
   <div class="nav-logo">Meu Filho Come!<span> Pro</span></div>
@@ -551,7 +551,6 @@ let counterTimer;
 
 function playVSL() {
   document.getElementById('vslOverlay').style.display = 'none';
-  document.body.classList.add('vsl-active');
   startLiveCounter();
   const tag = document.createElement('script');
   tag.src = 'https://www.youtube.com/iframe_api';
